@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { rejoinRoom } from '../api';
 import { useGameStore } from '../store/gameStore';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export default function BurgerMenu() {
   const navigate = useNavigate();
@@ -9,6 +10,18 @@ export default function BurgerMenu() {
   const [open, setOpen] = useState(false);
   const [rejoining, setRejoining] = useState(false);
   const [error, setError] = useState('');
+  const menuRef = useFocusTrap(open);
+
+  // Handle Escape key to close menu
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [open]);
 
   const canRejoin = !!playerId && !!roomCode;
 
@@ -45,7 +58,12 @@ export default function BurgerMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-64 clay-card p-3 space-y-2">
+        <div
+          ref={menuRef}
+          className="absolute right-0 mt-2 w-64 clay-card p-3 space-y-2"
+          role="menu"
+          aria-label="Navigationsmenu"
+        >
           {canRejoin && (
             <button
               onClick={handleRejoin}
@@ -56,7 +74,7 @@ export default function BurgerMenu() {
             </button>
           )}
           {!canRejoin && (
-            <p className="text-warm-light text-sm text-center py-1 font-medium">Ingen aktiv session</p>
+            <p className="text-warm-mid text-sm text-center py-1 font-medium">Ingen aktiv session</p>
           )}
           {error && (
             <p className="text-red-500 text-xs text-center font-medium">{error}</p>

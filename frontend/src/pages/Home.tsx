@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createRoom, joinRoom } from '../api';
 import { useGameStore } from '../store/gameStore';
 import { addToast } from '../store/toastStore';
 import DrawingCarousel from '../components/DrawingCarousel';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -14,6 +15,18 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState(urlCode?.toUpperCase() || '');
   const [loading, setLoading] = useState(false);
   const [showHow, setShowHow] = useState(false);
+  const modalRef = useFocusTrap(showHow);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showHow) {
+        setShowHow(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showHow]);
 
   const handleCreate = async () => {
     if (!name.trim()) return;
@@ -84,7 +97,7 @@ export default function Home() {
 
             <div className="flex items-center gap-3 my-4">
               <hr className="flex-1 border-warm-border" />
-              <span className="text-warm-light text-sm font-medium">eller</span>
+              <span className="text-warm-mid text-sm font-medium">eller</span>
               <hr className="flex-1 border-warm-border" />
             </div>
           </>
@@ -113,18 +126,23 @@ export default function Home() {
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
           onClick={() => setShowHow(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="how-to-play-title"
         >
           <div
+            ref={modalRef}
             className="clay-card max-w-md w-full p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowHow(false)}
-              className="absolute top-3 right-3 text-warm-light hover:text-warm-mid text-2xl leading-none"
+              className="absolute top-3 right-3 text-warm-mid hover:text-warm-dark text-2xl leading-none"
+              aria-label="Luk"
             >
               &times;
             </button>
-            <h2 className="font-heading text-2xl font-bold mb-4 text-warm-dark">Sådan spiller man</h2>
+            <h2 id="how-to-play-title" className="font-heading text-2xl font-bold mb-4 text-warm-dark">Sådan spiller man</h2>
             <ol className="space-y-3 text-warm-mid text-sm list-decimal list-inside">
               <li>En vært opretter et rum og deler rumkoden med de andre spillere.</li>
               <li>Alle skriver et <strong>hemmeligt ord</strong> — det starter en kæde.</li>
@@ -132,7 +150,7 @@ export default function Home() {
               <li>Kæderne roterer, så ingen ser deres egen kæde undervejs.</li>
               <li>Til sidst afsløres alle kæder trin for trin — og så griner I!</li>
             </ol>
-            <div className="mt-5 pt-4 border-t border-warm-border text-xs text-warm-light space-y-1">
+            <div className="mt-5 pt-4 border-t border-warm-border text-xs text-warm-mid space-y-1">
               <p>3–12 spillere &middot; 90 sek. til at tegne &middot; 30 sek. til at gætte</p>
             </div>
             <button

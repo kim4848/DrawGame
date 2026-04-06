@@ -275,7 +275,7 @@ export default function Reveal() {
             key={i}
             className="clay-card p-4 animate-fade-slide-in"
           >
-            <p className="text-xs text-warm-light mb-1 font-heading font-medium">
+            <p className="text-xs text-warm-mid mb-1 font-heading font-medium">
               Runde {entry.roundNumber + 1} — {entry.playerName}
             </p>
             {entry.type === 'DRAW' ? (
