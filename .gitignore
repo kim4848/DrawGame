@@ -1,0 +1,48 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.pfx
+*.publishsettings
+
+# Node
+node_modules/
+dist/
+
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+*.local
+appsettings.Development.json
+
+# Azure
+*.azurepubxml
+
+# DuckDB
+*.duckdb
+*.duckdb.wal
+data/
+
+# Uploads (blob storage locally cached)
+uploads/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Playwright
+test-results/
+playwright-report/
+
+# Claude Code
+.claude/

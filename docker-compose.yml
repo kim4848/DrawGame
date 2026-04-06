@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  backend:
+    build: ./backend
+    container_name: hearsay-backend
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - AZURE_BLOB_CONNECTION_STRING=${AZURE_BLOB_CONNECTION_STRING}
+      - AZURE_BLOB_CONTAINER=hearsay
+      - DB_PATH=/data/hearsay.duckdb
+    volumes:
+      - ./data:/data
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: hearsay-frontend
+    ports:
+      - "8083:8083"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
