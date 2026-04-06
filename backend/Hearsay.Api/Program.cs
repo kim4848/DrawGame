@@ -12,11 +12,16 @@ builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddScoped<GameService>();
 
 // CORS
+var allowedOrigins = builder.Configuration["ALLOWED_ORIGINS"]?.Split(',')
+    ?? new[] { "https://apps.kjsoft.dk", "http://localhost:3000", "http://localhost:8083" };
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 

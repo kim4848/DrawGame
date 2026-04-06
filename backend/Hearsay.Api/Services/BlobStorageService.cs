@@ -73,7 +73,9 @@ public class BlobStorageService
     public string? GetLocalFilePath(string blobPath)
     {
         if (!_useLocalStorage) return null;
-        var fullPath = Path.Combine(_localStoragePath, blobPath);
+        var fullPath = Path.GetFullPath(Path.Combine(_localStoragePath, blobPath));
+        if (!fullPath.StartsWith(Path.GetFullPath(_localStoragePath) + Path.DirectorySeparatorChar))
+            return null;
         return File.Exists(fullPath) ? fullPath : null;
     }
 }

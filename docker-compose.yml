@@ -8,6 +8,7 @@ services:
       - AZURE_BLOB_CONNECTION_STRING=${AZURE_BLOB_CONNECTION_STRING}
       - AZURE_BLOB_CONTAINER=hearsay
       - DB_PATH=/data/hearsay.duckdb
+      - ALLOWED_ORIGINS=https://apps.kjsoft.dk
     volumes:
       - ./data:/data
     ports:
