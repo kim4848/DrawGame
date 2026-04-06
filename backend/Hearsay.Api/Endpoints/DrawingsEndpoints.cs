@@ -26,6 +26,17 @@ public static class DrawingsEndpoints
             return Results.Ok(new UploadResponse(blobUrl));
         });
 
+        app.MapGet("/api/drawings/gallery", async (DuckDbService db, BlobStorageService blob, int? count) =>
+        {
+            var drawings = await db.GetRandomDrawings(count ?? 8);
+            var result = drawings.Select(d => new
+            {
+                imageUrl = blob.GetSasUrl(d.Content, TimeSpan.FromHours(1)),
+                word = d.Word
+            });
+            return Results.Ok(result);
+        });
+
         // Serve local drawings in dev mode
         app.MapGet("/api/drawings/{**path}", (string path, BlobStorageService blob) =>
         {

@@ -4,6 +4,7 @@ import type {
   PollResponse,
   RoomStateResponse,
   RevealResponse,
+  GalleryDrawing,
 } from './types';
 
 const BASE = '';
@@ -97,6 +98,12 @@ export async function uploadDrawing(
 export async function getRevealData(roomId: string): Promise<RevealResponse> {
   const res = await fetch(`${BASE}/api/rooms/${roomId}/reveal`);
   return json(res);
+}
+
+export async function getGalleryDrawings(count = 8): Promise<GalleryDrawing[]> {
+  const res = await fetch(`${BASE}/api/drawings/gallery?count=${count}`);
+  if (!res.ok) return [];
+  return res.json();
 }
 
 export async function markDone(roomId: string, playerId: string): Promise<void> {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createRoom, joinRoom } from '../api';
 import { useGameStore } from '../store/gameStore';
+import DrawingCarousel from '../components/DrawingCarousel';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -56,10 +57,12 @@ export default function Home() {
       <p className="text-warm-mid mb-2 text-lg font-medium">Tegn, gæt og grin sammen</p>
       <button
         onClick={() => setShowHow(true)}
-        className="text-coral hover:text-coral-dark underline text-sm mb-10 font-semibold"
+        className="text-coral hover:text-coral-dark underline text-sm mb-4 font-semibold"
       >
         Hvordan spiller man?
       </button>
+
+      <DrawingCarousel />
 
       {error && (
         <div className="mb-4 px-4 py-2 bg-red-100 text-red-700 rounded-[var(--radius-clay-sm)] border-2 border-red-200 max-w-md w-full text-center font-medium">

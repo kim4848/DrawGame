@@ -177,3 +177,27 @@ body {
 .animate-fade-slide-in {
   animation: fade-slide-in 0.4s ease-out;
 }
+
+/* Drawing carousel */
+.carousel-container {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+@keyframes carousel-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+.carousel-track {
+  width: max-content;
+  will-change: transform;
+  animation: carousel-scroll calc(var(--item-count, 8) * 3s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track {
+    animation: none;
+  }
+}

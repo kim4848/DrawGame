@@ -394,6 +394,28 @@ public class DuckDbService : IDisposable
         }
     }
 
+    public async Task<List<(string Content, string Word)>> GetRandomDrawings(int count)
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = @"
+            SELECT ce.content, prev.content AS word
+            FROM chain_entries ce
+            JOIN chain_entries prev ON prev.chain_id = ce.chain_id AND prev.round_number = ce.round_number - 1
+            WHERE ce.type = 'DRAW' AND prev.type IN ('WORD', 'GUESS') AND ce.content IS NOT NULL
+            ORDER BY RANDOM()
+            LIMIT $count";
+        cmd.Parameters.Add(new DuckDBParameter("count", count));
+        using var reader = await cmd.ExecuteReaderAsync();
+        var results = new List<(string Content, string Word)>();
+        while (await reader.ReadAsync())
+        {
+            var content = reader.GetString(0);
+            var word = reader.IsDBNull(1) ? "" : reader.GetString(1);
+            results.Add((content, word));
+        }
+        return results;
+    }
+
     public async Task<bool> IsCodeUnique(string code)
     {
         using var cmd = _connection.CreateCommand();

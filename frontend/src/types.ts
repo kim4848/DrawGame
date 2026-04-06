@@ -55,3 +55,8 @@ export interface ChainRevealDto {
 export interface RevealResponse {
   chains: ChainRevealDto[];
 }
+
+export interface GalleryDrawing {
+  imageUrl: string;
+  word: string;
+}
