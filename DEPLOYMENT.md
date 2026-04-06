@@ -44,7 +44,66 @@ The application consists of two Docker containers deployed behind Cosmos Server 
 |---|---|---|
 | `VITE_API_BASE_URL` | Backend API base URL | `https://api.yourdomain.com` |
 
-## Current Deployment Process
+## Automated Deployment (GitHub Actions)
+
+### Prerequisites
+
+Configure the following GitHub secrets in your repository settings (`Settings → Secrets and variables → Actions`):
+
+| Secret | Description | Example |
+|---|---|---|
+| `DEPLOY_HOST` | Production server hostname or IP | `your-server.com` or `192.168.1.100` |
+| `DEPLOY_USER` | SSH username on production server | `deploy` or `ubuntu` |
+| `DEPLOY_SSH_KEY` | Private SSH key for authentication | `-----BEGIN OPENSSH PRIVATE KEY-----\n...` |
+| `DEPLOY_PATH` | Absolute path to application on server | `/home/deploy/hearsay` |
+
+### Deploying via GitHub Actions
+
+1. **Navigate to Actions tab** in your GitHub repository
+2. **Select "Deploy to Production"** workflow from the left sidebar
+3. **Click "Run workflow"** button
+4. **Type "deploy"** in the confirmation field to proceed
+5. **Click "Run workflow"** to start deployment
+
+The workflow will:
+- ✅ Validate environment variables on the server
+- ✅ Pull latest code from `main` branch
+- ✅ Stop current containers
+- ✅ Build and start new containers
+- ✅ Run health checks
+- ✅ Report success or failure
+
+### Setting Up SSH Access
+
+On your production server:
+
+```bash
+# Create deployment user (if not exists)
+sudo useradd -m -s /bin/bash deploy
+sudo usermod -aG docker deploy
+
+# Generate SSH key pair (on your local machine)
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f deploy_key
+
+# Copy public key to server
+ssh-copy-id -i deploy_key.pub deploy@your-server.com
+
+# Add private key to GitHub secrets
+cat deploy_key | pbcopy  # macOS
+# or
+cat deploy_key  # Linux - copy output manually
+```
+
+Then add the private key content to GitHub as `DEPLOY_SSH_KEY`.
+
+### Monitoring Deployment
+
+- Watch the workflow run in GitHub Actions tab
+- Each step shows real-time logs
+- Health check confirms successful deployment
+- Failures trigger automatic notifications
+
+## Manual Deployment Process
 
 ### 1. Prepare Environment
 
@@ -114,19 +173,50 @@ docker compose up -d
 
 ## Rollback Procedure
 
-In case of deployment issues:
+### Via GitHub Actions
+
+If a deployment fails or causes issues:
+
+1. **Identify the last working commit/tag** from git history
+2. **Revert the main branch** to that commit:
+   ```bash
+   git revert <bad-commit-hash>
+   git push origin main
+   ```
+3. **Run the deployment workflow** again from GitHub Actions
+
+### Manual Rollback
+
+SSH into the production server:
 
 ```bash
+ssh deploy@your-server.com
+cd /path/to/hearsay
+
 # Stop current deployment
 docker compose down
 
-# Revert to previous images
-docker compose pull
+# Revert to previous commit
+git checkout <previous-tag-or-commit>
+
+# Rebuild and start
+docker compose build
 docker compose up -d
 
-# Or rebuild from previous git tag
-git checkout <previous-tag>
-docker compose build
+# Verify health
+./scripts/health-check.sh
+```
+
+### Emergency Rollback (Fastest)
+
+If you need to rollback immediately without rebuilding:
+
+```bash
+# Stop containers
+docker compose down
+
+# Restore previous Docker images (if cached)
+docker compose pull
 docker compose up -d
 ```
 
@@ -138,6 +228,30 @@ docker compose up -d
 - Drawings storage: Azure Blob Storage container
 
 ## Troubleshooting
+
+### GitHub Actions Deployment Failures
+
+**SSH connection failed**
+- Verify `DEPLOY_HOST`, `DEPLOY_USER`, and `DEPLOY_SSH_KEY` secrets are correctly set
+- Ensure the SSH key has no passphrase
+- Check server firewall allows SSH connections from GitHub Actions IPs
+- Test SSH locally: `ssh -i deploy_key deploy@your-server.com`
+
+**Environment validation failed**
+- Ensure `.env` file exists on the server at `$DEPLOY_PATH`
+- Verify all required environment variables are set
+- Run `./scripts/validate-env.sh` manually on server to see specific errors
+
+**Health check failed**
+- Check if containers started: `docker compose ps`
+- Review container logs: `docker compose logs -f`
+- Verify port 5000 is not blocked by firewall
+- Increase `MAX_ATTEMPTS` in health check if server is slow to start
+
+**Deployment timeout**
+- GitHub Actions has 6-hour job timeout by default
+- For large images, consider pre-building on server
+- Check network connectivity between GitHub and server
 
 ### Backend won't start
 
