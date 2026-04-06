@@ -7,6 +7,7 @@ interface DrawCanvasProps {
 }
 
 const COLORS = ['#000000', '#FF0000', '#0000FF', '#00AA00', '#FF8800', '#8800FF', '#FF00FF', '#888888'];
+const MAX_UNDO = 30;
 
 export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,6 +18,9 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
   const [showColorPicker, setShowColorPicker] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const lastPos = useRef<{ x: number; y: number } | null>(null);
+  const undoStack = useRef<ImageData[]>([]);
+  const redoStack = useRef<ImageData[]>([]);
+  const [, forceRender] = useState(0);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -38,6 +42,8 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
     const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    undoStack.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
+    redoStack.current = [];
   }, []);
 
   const getPos = (e: React.MouseEvent | React.TouchEvent) => {
@@ -80,6 +86,17 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
   };
 
   const endDraw = () => {
+    if (isDrawing) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d')!;
+        const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        if (undoStack.current.length >= MAX_UNDO) undoStack.current.shift();
+        undoStack.current.push(snapshot);
+        redoStack.current = [];
+        forceRender((n) => n + 1);
+      }
+    }
     setIsDrawing(false);
     lastPos.current = null;
   };
@@ -90,7 +107,43 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
     const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if (undoStack.current.length >= MAX_UNDO) undoStack.current.shift();
+    undoStack.current.push(snapshot);
+    redoStack.current = [];
+    forceRender((n) => n + 1);
   };
+
+  const undo = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || undoStack.current.length <= 1) return;
+    const ctx = canvas.getContext('2d')!;
+    const current = undoStack.current.pop()!;
+    redoStack.current.push(current);
+    ctx.putImageData(undoStack.current[undoStack.current.length - 1], 0, 0);
+    forceRender((n) => n + 1);
+  }, []);
+
+  const redo = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || redoStack.current.length === 0) return;
+    const ctx = canvas.getContext('2d')!;
+    const next = redoStack.current.pop()!;
+    undoStack.current.push(next);
+    ctx.putImageData(next, 0, 0);
+    forceRender((n) => n + 1);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (disabled) return;
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [disabled, undo, redo]);
 
   const handleSubmit = useCallback(() => {
     const canvas = canvasRef.current;
@@ -202,6 +255,22 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
           className="w-24 accent-coral"
         />
 
+        <button
+          onClick={undo}
+          disabled={undoStack.current.length <= 1}
+          className="clay-btn px-3 py-1.5 text-sm clay-btn-soft"
+          title="Fortryd (Ctrl+Z)"
+        >
+          Fortryd
+        </button>
+        <button
+          onClick={redo}
+          disabled={redoStack.current.length === 0}
+          className="clay-btn px-3 py-1.5 text-sm clay-btn-soft"
+          title="Gendan (Ctrl+Y)"
+        >
+          Gendan
+        </button>
         <button
           onClick={clearCanvas}
           className="clay-btn px-3 py-1.5 text-sm bg-red-100 border-red-200 text-red-700 hover:bg-red-200"

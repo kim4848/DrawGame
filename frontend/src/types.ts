@@ -19,6 +19,9 @@ export interface PollResponse {
   assignment: AssignmentDto | null;
   allSubmitted: boolean;
   hasSubmitted: boolean;
+  drawTimer: number;
+  guessTimer: number;
+  nextRoomCode: string | null;
 }
 
 export interface CreateRoomResponse {

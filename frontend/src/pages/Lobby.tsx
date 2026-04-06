@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { startGame } from '../api';
 import { useGameStore } from '../store/gameStore';
+import { addToast } from '../store/toastStore';
 import { useRoomPoll } from '../hooks/useRoomPoll';
 
 export default function Lobby() {
@@ -21,6 +22,7 @@ export default function Lobby() {
   }, [roomId, playerId, roomStatus, navigate]);
 
   const [copied, setCopied] = useState(false);
+  const [timerPreset, setTimerPreset] = useState<'short' | 'normal' | 'long'>('normal');
 
   const shareLink = `${window.location.origin}/join/${roomCode}`;
 
@@ -44,12 +46,19 @@ export default function Lobby() {
   const isHost = playerId === hostId;
   const canStart = isHost && players.length >= 2;
 
+  const timerConfig = {
+    short:  { draw: 45,  guess: 15, label: 'Kort (45s / 15s)' },
+    normal: { draw: 90,  guess: 30, label: 'Normal (90s / 30s)' },
+    long:   { draw: 120, guess: 45, label: 'Lang (120s / 45s)' },
+  } as const;
+
   const handleStart = async () => {
     if (!roomId || !playerId) return;
     try {
-      await startGame(roomId, playerId);
+      const t = timerConfig[timerPreset];
+      await startGame(roomId, playerId, t.draw, t.guess);
     } catch (e: any) {
-      alert(e.message || 'Kunne ikke starte spillet.');
+      addToast(e.message || 'Kunne ikke starte spillet.', 'error');
     }
   };
 
@@ -105,13 +114,31 @@ export default function Lobby() {
       </div>
 
       {isHost ? (
-        <button
-          onClick={handleStart}
-          disabled={!canStart}
-          className="clay-btn clay-btn-primary px-8 py-3 text-lg"
-        >
-          {canStart ? 'Start spillet' : `Venter på spillere... (min. 2)`}
-        </button>
+        <div className="flex flex-col items-center gap-4">
+          <div className="clay-card p-3 w-full max-w-sm">
+            <p className="text-warm-mid text-sm font-medium mb-2 text-center">Tidsbegrænsning</p>
+            <div className="flex gap-2 justify-center">
+              {(['short', 'normal', 'long'] as const).map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setTimerPreset(preset)}
+                  className={`clay-btn px-3 py-1.5 text-sm ${
+                    timerPreset === preset ? 'clay-btn-primary' : 'clay-btn-soft'
+                  }`}
+                >
+                  {timerConfig[preset].label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={handleStart}
+            disabled={!canStart}
+            className="clay-btn clay-btn-primary px-8 py-3 text-lg"
+          >
+            {canStart ? 'Start spillet' : `Venter på spillere... (min. 2)`}
+          </button>
+        </div>
       ) : (
         <p className="text-warm-mid text-lg font-medium">Venter på at værten starter spillet...</p>
       )}

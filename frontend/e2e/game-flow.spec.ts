@@ -100,19 +100,18 @@ test.describe('Hearsay Game Flow', () => {
     await host.getByRole('button', { name: 'Indsend' }).click();
     await player2.getByRole('button', { name: 'Indsend' }).click();
 
-    // Round 2: Both guess the other player's drawing (N=2, last round)
+    // Round 2: Both guess the other's drawing (N+1 = 3 rounds for 2 players)
     await expect(host.getByText('Hvad forestiller denne tegning?')).toBeVisible({ timeout: 10000 });
     await expect(player2.getByText('Hvad forestiller denne tegning?')).toBeVisible({ timeout: 10000 });
 
-    await host.getByPlaceholder('Skriv dit gæt...').fill('En kat');
+    await host.getByPlaceholder('Skriv dit gæt...').fill('et gæt');
     await host.getByRole('button', { name: 'Indsend' }).click();
-
-    await player2.getByPlaceholder('Skriv dit gæt...').fill('Et træ');
+    await player2.getByPlaceholder('Skriv dit gæt...').fill('et gæt');
     await player2.getByRole('button', { name: 'Indsend' }).click();
 
-    // Both should end up in reveal after all 3 rounds (WORD → DRAW → GUESS)
-    await expect(host).toHaveURL('/reveal', { timeout: 10000 });
-    await expect(player2).toHaveURL('/reveal', { timeout: 10000 });
+    // After round 2 (3 rounds total for 2 players), goes to REVEAL
+    await expect(host).toHaveURL('/reveal', { timeout: 15000 });
+    await expect(player2).toHaveURL('/reveal', { timeout: 15000 });
 
     // Reveal page should show chain data
     await expect(host.getByText('Hvad skete der?')).toBeVisible();

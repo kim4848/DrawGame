@@ -65,7 +65,7 @@ public class GameService
         return (room, player);
     }
 
-    public async Task<bool> StartGame(string roomId, string playerId)
+    public async Task<bool> StartGame(string roomId, string playerId, int? drawTimer = null, int? guessTimer = null)
     {
         var room = await _db.GetRoomById(roomId);
         if (room == null || room.Status != "LOBBY" || room.HostId != playerId)
@@ -74,6 +74,9 @@ public class GameService
         var players = await _db.GetPlayersByRoom(roomId);
         if (players.Count < 2)
             return false;
+
+        if (drawTimer.HasValue && guessTimer.HasValue)
+            await _db.UpdateRoomTimers(roomId, drawTimer.Value, guessTimer.Value);
 
         await _db.UpdateRoomNumPlayers(roomId, players.Count);
 
@@ -119,10 +122,10 @@ public class GameService
             if (playerIndex >= 0)
             {
                 int n = players.Count;
-                // R0 and R1: own chain. R≥2: chain flows right with offset (R-1)
+                // R0+R1: own chain (write word, then draw it). R≥2: rotate so every chain passes through all players.
                 int chainOwnerIndex = currentRound <= 1
                     ? playerIndex
-                    : ((playerIndex - (currentRound - 1)) % n + n) % n;
+                    : (playerIndex + (currentRound - 1)) % n;
                 var assignedChain = chains.FirstOrDefault(c => c.OriginPlayerId == players[chainOwnerIndex].Id);
 
                 if (assignedChain != null)
@@ -152,7 +155,7 @@ public class GameService
             // Server-side timeout: auto-submit for inactive players
             if (!allSubmitted && room.RoundStartedAt.HasValue)
             {
-                int timeoutSeconds = roundType == "DRAW" ? 95 : 35; // timer + 5s grace
+                int timeoutSeconds = roundType == "DRAW" ? room.DrawTimer + 5 : room.GuessTimer + 5;
                 if ((DateTime.UtcNow - room.RoundStartedAt.Value).TotalSeconds > timeoutSeconds)
                 {
                     foreach (var p in players)
@@ -168,7 +171,7 @@ public class GameService
                         int n = players.Count;
                         int chainOwnerIndex = currentRound <= 1
                             ? pIndex
-                            : ((pIndex - (currentRound - 1)) % n + n) % n;
+                            : (pIndex + (currentRound - 1)) % n;
                         var pChain = chains.FirstOrDefault(c => c.OriginPlayerId == players[chainOwnerIndex].Id);
                         if (pChain == null) continue;
 
@@ -197,7 +200,7 @@ public class GameService
                     if (submittedCount >= room.NumPlayers)
                     {
                         int nextRound = currentRound + 1;
-                        if (nextRound >= room.NumPlayers)
+                        if (nextRound > room.NumPlayers)
                         {
                             await _db.UpdateRoomStatus(roomId, "REVEAL");
                             room = (await _db.GetRoomById(roomId))!;
@@ -225,12 +228,15 @@ public class GameService
         return new PollResponse(
             room.Status,
             currentRound,
-            players.Count,
+            players.Count + 1,
             roundType,
             playerDtos,
             assignment,
             allSubmitted,
-            hasSubmitted
+            hasSubmitted,
+            room.DrawTimer,
+            room.GuessTimer,
+            room.NextRoomCode
         );
     }
 
@@ -262,7 +268,7 @@ public class GameService
         if (submittedCount >= room.NumPlayers)
         {
             int nextRound = round + 1;
-            if (nextRound >= room.NumPlayers)
+            if (nextRound > room.NumPlayers)
             {
                 await _db.UpdateRoomStatus(roomId, "REVEAL");
             }
@@ -314,6 +320,30 @@ public class GameService
         }
 
         return new RevealResponse(chainReveals);
+    }
+
+    public async Task<(Room NewRoom, Player NewHostPlayer)?> PlayAgain(string oldRoomId, string playerId)
+    {
+        var oldRoom = await _db.GetRoomById(oldRoomId);
+        if (oldRoom == null || oldRoom.HostId != playerId)
+            return null;
+
+        if (oldRoom.Status != "REVEAL" && oldRoom.Status != "DONE")
+            return null;
+
+        // Get host player name
+        var hostPlayer = await _db.GetPlayerById(playerId);
+        if (hostPlayer == null) return null;
+
+        // Create new room
+        var (newRoom, newHostPlayer) = await CreateRoom(hostPlayer.Name);
+
+        // Link old room to new room and mark done
+        await _db.UpdateNextRoomCode(oldRoomId, newRoom.Code);
+        if (oldRoom.Status != "DONE")
+            await _db.UpdateRoomStatus(oldRoomId, "DONE");
+
+        return (newRoom, newHostPlayer);
     }
 
     public async Task<RoomStateResponse?> GetRoomState(string code)

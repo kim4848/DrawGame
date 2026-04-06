@@ -60,9 +60,14 @@ public class DuckDbService : IDisposable
             ";
             await cmd.ExecuteNonQueryAsync();
 
-            // Migration: add round_started_at if missing (existing databases)
+            // Migrations: add columns if missing (existing databases)
             using var migCmd = _connection.CreateCommand();
-            migCmd.CommandText = "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS round_started_at TIMESTAMP;";
+            migCmd.CommandText = @"
+                ALTER TABLE rooms ADD COLUMN IF NOT EXISTS round_started_at TIMESTAMP;
+                ALTER TABLE rooms ADD COLUMN IF NOT EXISTS draw_timer INTEGER DEFAULT 90;
+                ALTER TABLE rooms ADD COLUMN IF NOT EXISTS guess_timer INTEGER DEFAULT 30;
+                ALTER TABLE rooms ADD COLUMN IF NOT EXISTS next_room_code VARCHAR;
+            ";
             await migCmd.ExecuteNonQueryAsync();
         }
         finally
@@ -97,7 +102,7 @@ public class DuckDbService : IDisposable
     public async Task<Room?> GetRoomByCode(string code)
     {
         using var cmd = _connection.CreateCommand();
-        cmd.CommandText = "SELECT id, code, host_id, status, num_players, created_at, round_started_at FROM rooms WHERE code = $code";
+        cmd.CommandText = "SELECT id, code, host_id, status, num_players, created_at, round_started_at, draw_timer, guess_timer, next_room_code FROM rooms WHERE code = $code";
         cmd.Parameters.Add(new DuckDBParameter("code", code));
         using var reader = await cmd.ExecuteReaderAsync();
         if (await reader.ReadAsync())
@@ -110,7 +115,10 @@ public class DuckDbService : IDisposable
                 Status = reader.GetString(3),
                 NumPlayers = reader.GetInt32(4),
                 CreatedAt = reader.GetDateTime(5),
-                RoundStartedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
+                RoundStartedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
+                DrawTimer = reader.IsDBNull(7) ? 90 : reader.GetInt32(7),
+                GuessTimer = reader.IsDBNull(8) ? 30 : reader.GetInt32(8),
+                NextRoomCode = reader.IsDBNull(9) ? null : reader.GetString(9)
             };
         }
         return null;
@@ -119,7 +127,7 @@ public class DuckDbService : IDisposable
     public async Task<Room?> GetRoomById(string id)
     {
         using var cmd = _connection.CreateCommand();
-        cmd.CommandText = "SELECT id, code, host_id, status, num_players, created_at, round_started_at FROM rooms WHERE id = $id";
+        cmd.CommandText = "SELECT id, code, host_id, status, num_players, created_at, round_started_at, draw_timer, guess_timer, next_room_code FROM rooms WHERE id = $id";
         cmd.Parameters.Add(new DuckDBParameter("id", id));
         using var reader = await cmd.ExecuteReaderAsync();
         if (await reader.ReadAsync())
@@ -132,7 +140,10 @@ public class DuckDbService : IDisposable
                 Status = reader.GetString(3),
                 NumPlayers = reader.GetInt32(4),
                 CreatedAt = reader.GetDateTime(5),
-                RoundStartedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
+                RoundStartedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
+                DrawTimer = reader.IsDBNull(7) ? 90 : reader.GetInt32(7),
+                GuessTimer = reader.IsDBNull(8) ? 30 : reader.GetInt32(8),
+                NextRoomCode = reader.IsDBNull(9) ? null : reader.GetString(9)
             };
         }
         return null;
@@ -154,6 +165,41 @@ public class DuckDbService : IDisposable
             }
             cmd.Parameters.Add(new DuckDBParameter("id", id));
             cmd.Parameters.Add(new DuckDBParameter("status", status));
+            await cmd.ExecuteNonQueryAsync();
+        }
+        finally
+        {
+            _writeLock.Release();
+        }
+    }
+
+    public async Task UpdateNextRoomCode(string id, string nextRoomCode)
+    {
+        await _writeLock.WaitAsync();
+        try
+        {
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "UPDATE rooms SET next_room_code = $next_room_code WHERE id = $id";
+            cmd.Parameters.Add(new DuckDBParameter("id", id));
+            cmd.Parameters.Add(new DuckDBParameter("next_room_code", nextRoomCode));
+            await cmd.ExecuteNonQueryAsync();
+        }
+        finally
+        {
+            _writeLock.Release();
+        }
+    }
+
+    public async Task UpdateRoomTimers(string id, int drawTimer, int guessTimer)
+    {
+        await _writeLock.WaitAsync();
+        try
+        {
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "UPDATE rooms SET draw_timer = $draw_timer, guess_timer = $guess_timer WHERE id = $id";
+            cmd.Parameters.Add(new DuckDBParameter("id", id));
+            cmd.Parameters.Add(new DuckDBParameter("draw_timer", drawTimer));
+            cmd.Parameters.Add(new DuckDBParameter("guess_timer", guessTimer));
             await cmd.ExecuteNonQueryAsync();
         }
         finally

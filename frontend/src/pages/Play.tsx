@@ -6,13 +6,14 @@ import { useRoomPoll } from '../hooks/useRoomPoll';
 import DrawCanvas from '../components/DrawCanvas';
 import GuessInput from '../components/GuessInput';
 import Timer from '../components/Timer';
+import { addToast } from '../store/toastStore';
 import { getRandomWord, type RandomWord } from '../utils/wordGenerator';
 
 export default function Play() {
   const navigate = useNavigate();
   const {
     roomId, playerId, roomStatus, currentRound, totalRounds, roundType,
-    assignment, hasSubmitted
+    assignment, hasSubmitted, drawTimer, guessTimer
   } = useGameStore();
 
   const [submitting, setSubmitting] = useState(false);
@@ -50,6 +51,7 @@ export default function Play() {
       await submitEntry(roomId, playerId, assignment.chainId, currentRound, 'WORD', content);
       setSubmitted(true);
     } catch {
+      addToast('Kunne ikke indsende. Prøv igen.', 'error');
       setSubmitting(false);
     }
   }, [roomId, playerId, assignment, currentRound, wordInput, submitting]);
@@ -62,6 +64,7 @@ export default function Play() {
       await submitEntry(roomId, playerId, assignment.chainId, currentRound, 'DRAW', blobUrl);
       setSubmitted(true);
     } catch {
+      addToast('Kunne ikke indsende tegning. Prøv igen.', 'error');
       setSubmitting(false);
     }
   }, [roomId, playerId, assignment, currentRound, submitting]);
@@ -73,6 +76,7 @@ export default function Play() {
       await submitEntry(roomId, playerId, assignment.chainId, currentRound, 'GUESS', guess);
       setSubmitted(true);
     } catch {
+      addToast('Kunne ikke indsende gæt. Prøv igen.', 'error');
       setSubmitting(false);
     }
   }, [roomId, playerId, assignment, currentRound, submitting]);
@@ -105,7 +109,7 @@ export default function Play() {
     );
   }
 
-  const timerSeconds = roundType === 'DRAW' ? 90 : 30;
+  const timerSeconds = roundType === 'DRAW' ? drawTimer : guessTimer;
 
   return (
     <div className="clay-bg flex flex-col items-center p-4">

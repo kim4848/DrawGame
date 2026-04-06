@@ -48,7 +48,7 @@ public static class RoomsEndpoints
 
         app.MapPost("/api/rooms/{id}/start", async (string id, StartGameRequest req, GameService game) =>
         {
-            var success = await game.StartGame(id, req.PlayerId);
+            var success = await game.StartGame(id, req.PlayerId, req.DrawTimer, req.GuessTimer);
             if (!success)
                 return Results.BadRequest(new { error = "Kunne ikke starte spillet." });
 
@@ -80,6 +80,15 @@ public static class RoomsEndpoints
                 return Results.NotFound(new { error = "Room not found" });
 
             return Results.Ok(data);
+        });
+
+        app.MapPost("/api/rooms/{id}/play-again", async (string id, PlayAgainRequest req, GameService game) =>
+        {
+            var result = await game.PlayAgain(id, req.PlayerId);
+            if (result == null)
+                return Results.BadRequest(new { error = "Kunne ikke starte nyt spil." });
+
+            return Results.Ok(new PlayAgainResponse(result.Value.NewRoom.Id, result.Value.NewRoom.Code, result.Value.NewHostPlayer.Id));
         });
 
         app.MapPost("/api/rooms/{id}/done", async (string id, StartGameRequest req, DuckDbService db) =>

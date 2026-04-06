@@ -49,11 +49,16 @@ export async function getRoomState(code: string): Promise<RoomStateResponse> {
   return json(res);
 }
 
-export async function startGame(roomId: string, playerId: string): Promise<void> {
+export async function startGame(
+  roomId: string,
+  playerId: string,
+  drawTimer?: number,
+  guessTimer?: number
+): Promise<void> {
   const res = await fetch(`${BASE}/api/rooms/${roomId}/start`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ playerId }),
+    body: JSON.stringify({ playerId, drawTimer, guessTimer }),
   });
   await json(res);
 }
@@ -104,6 +109,15 @@ export async function getGalleryDrawings(count = 8): Promise<GalleryDrawing[]> {
   const res = await fetch(`${BASE}/api/drawings/gallery?count=${count}`);
   if (!res.ok) return [];
   return res.json();
+}
+
+export async function playAgain(roomId: string, playerId: string): Promise<{ roomId: string; roomCode: string; playerId: string }> {
+  const res = await fetch(`${BASE}/api/rooms/${roomId}/play-again`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ playerId }),
+  });
+  return json(res);
 }
 
 export async function markDone(roomId: string, playerId: string): Promise<void> {

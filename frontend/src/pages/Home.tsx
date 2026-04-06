@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createRoom, joinRoom } from '../api';
 import { useGameStore } from '../store/gameStore';
+import { addToast } from '../store/toastStore';
 import DrawingCarousel from '../components/DrawingCarousel';
 
 export default function Home() {
@@ -11,14 +12,12 @@ export default function Home() {
 
   const [name, setName] = useState('');
   const [joinCode, setJoinCode] = useState(urlCode?.toUpperCase() || '');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showHow, setShowHow] = useState(false);
 
   const handleCreate = async () => {
     if (!name.trim()) return;
     setLoading(true);
-    setError('');
     try {
       const res = await createRoom(name.trim());
       setPlayer(res.playerId);
@@ -26,7 +25,7 @@ export default function Home() {
       setHostId(res.playerId);
       navigate('/lobby');
     } catch (e: any) {
-      setError(e.message || 'Noget gik galt.');
+      addToast(e.message || 'Noget gik galt.', 'error');
     } finally {
       setLoading(false);
     }
@@ -35,7 +34,6 @@ export default function Home() {
   const handleJoin = async () => {
     if (!name.trim() || !joinCode.trim()) return;
     setLoading(true);
-    setError('');
     try {
       const res = await joinRoom(joinCode.trim().toUpperCase(), name.trim());
       setPlayer(res.playerId);
@@ -43,7 +41,7 @@ export default function Home() {
       setHostId('');
       navigate('/lobby');
     } catch (e: any) {
-      setError(e.message || 'Rummet blev ikke fundet. Tjek koden og prøv igen.');
+      addToast(e.message || 'Rummet blev ikke fundet. Tjek koden og prøv igen.', 'error');
     } finally {
       setLoading(false);
     }
@@ -63,12 +61,6 @@ export default function Home() {
       </button>
 
       <DrawingCarousel />
-
-      {error && (
-        <div className="mb-4 px-4 py-2 bg-red-100 text-red-700 rounded-[var(--radius-clay-sm)] border-2 border-red-200 max-w-md w-full text-center font-medium">
-          {error}
-        </div>
-      )}
 
       <div className="w-full max-w-md space-y-3">
         <input

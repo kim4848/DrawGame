@@ -14,6 +14,9 @@ interface GameState {
   assignment: AssignmentDto | null;
   allSubmitted: boolean;
   hasSubmitted: boolean;
+  drawTimer: number;
+  guessTimer: number;
+  nextRoomCode: string | null;
 
   setPlayer: (id: string) => void;
   setRoom: (id: string, code: string) => void;
@@ -41,6 +44,9 @@ export const useGameStore = create<GameState>((set) => ({
   assignment: null,
   allSubmitted: false,
   hasSubmitted: false,
+  drawTimer: 90,
+  guessTimer: 30,
+  nextRoomCode: null,
 
   setPlayer: (id) => {
     localStorage.setItem('myPlayerId', id);
@@ -68,6 +74,9 @@ export const useGameStore = create<GameState>((set) => ({
       assignment: data.assignment,
       allSubmitted: data.allSubmitted,
       hasSubmitted: data.hasSubmitted,
+      drawTimer: data.drawTimer ?? 90,
+      guessTimer: data.guessTimer ?? 30,
+      nextRoomCode: data.nextRoomCode ?? null,
     });
   },
 
@@ -89,6 +98,9 @@ export const useGameStore = create<GameState>((set) => ({
       assignment: null,
       allSubmitted: false,
       hasSubmitted: false,
+      drawTimer: 90,
+      guessTimer: 30,
+      nextRoomCode: null,
     });
   },
 }));

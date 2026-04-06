@@ -4,11 +4,13 @@ import Lobby from './pages/Lobby';
 import Play from './pages/Play';
 import Reveal from './pages/Reveal';
 import BurgerMenu from './components/BurgerMenu';
+import ToastContainer from './components/Toast';
 
 export default function App() {
   return (
     <BrowserRouter>
       <BurgerMenu />
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/join/:code" element={<Home />} />
