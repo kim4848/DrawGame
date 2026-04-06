@@ -14,8 +14,8 @@ export default function GuessInput({ imageUrl, onSubmit, disabled, guess, onGues
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <h2 className="text-xl font-semibold">Hvad forestiller denne tegning?</h2>
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+      <h2 className="font-heading text-xl font-semibold text-warm-dark">Hvad forestiller denne tegning?</h2>
+      <div className="clay-card overflow-hidden">
         <img
           src={imageUrl}
           alt="Tegning at gætte"
@@ -28,14 +28,14 @@ export default function GuessInput({ imageUrl, onSubmit, disabled, guess, onGues
         onChange={(e) => onGuessChange(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && !disabled && handleSubmit()}
         placeholder="Skriv dit gæt..."
-        className="w-full max-w-md px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none"
+        className="clay-input w-full max-w-md px-4 py-3 text-lg"
         disabled={disabled}
         autoFocus
       />
       <button
         onClick={handleSubmit}
         disabled={disabled}
-        className="px-8 py-3 bg-blue-500 text-white rounded-lg text-lg font-semibold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="clay-btn clay-btn-primary px-8 py-3 text-lg"
       >
         Indsend
       </button>

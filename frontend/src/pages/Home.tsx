@@ -49,18 +49,20 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-blue-50 to-white">
-      <h1 className="text-5xl font-bold mb-2 text-gray-800">Hvad sker der egentlig?</h1>
-      <p className="text-gray-500 mb-2 text-lg">Tegn, gæt og grin sammen</p>
+    <div className="clay-bg flex flex-col items-center justify-center p-4">
+      <h1 className="font-heading text-5xl font-bold mb-2 text-warm-dark">
+        Hvad sker der egentlig?
+      </h1>
+      <p className="text-warm-mid mb-2 text-lg font-medium">Tegn, gæt og grin sammen</p>
       <button
         onClick={() => setShowHow(true)}
-        className="text-blue-500 hover:text-blue-700 underline text-sm mb-10"
+        className="text-coral hover:text-coral-dark underline text-sm mb-10 font-semibold"
       >
         Hvordan spiller man?
       </button>
 
       {error && (
-        <div className="mb-4 px-4 py-2 bg-red-100 text-red-700 rounded-lg max-w-md w-full text-center">
+        <div className="mb-4 px-4 py-2 bg-red-100 text-red-700 rounded-[var(--radius-clay-sm)] border-2 border-red-200 max-w-md w-full text-center font-medium">
           {error}
         </div>
       )}
@@ -71,7 +73,7 @@ export default function Home() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Dit navn"
-          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none"
+          className="clay-input w-full px-4 py-3 text-lg"
           maxLength={20}
         />
 
@@ -80,15 +82,15 @@ export default function Home() {
             <button
               onClick={handleCreate}
               disabled={loading || !name.trim()}
-              className="w-full py-3 bg-blue-500 text-white rounded-lg text-lg font-semibold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="clay-btn clay-btn-primary w-full py-3 text-lg"
             >
               Opret spil
             </button>
 
             <div className="flex items-center gap-3 my-4">
-              <hr className="flex-1 border-gray-300" />
-              <span className="text-gray-400 text-sm">eller</span>
-              <hr className="flex-1 border-gray-300" />
+              <hr className="flex-1 border-warm-border" />
+              <span className="text-warm-light text-sm font-medium">eller</span>
+              <hr className="flex-1 border-warm-border" />
             </div>
           </>
         )}
@@ -98,7 +100,7 @@ export default function Home() {
           value={joinCode}
           onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
           placeholder="Indtast rumkode"
-          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg tracking-widest text-center uppercase focus:border-blue-500 focus:outline-none"
+          className="clay-input w-full px-4 py-3 text-lg tracking-widest text-center uppercase font-heading font-bold"
           maxLength={6}
           readOnly={!!urlCode}
         />
@@ -106,7 +108,7 @@ export default function Home() {
         <button
           onClick={handleJoin}
           disabled={loading || !name.trim() || !joinCode.trim()}
-          className="w-full py-3 bg-green-500 text-white rounded-lg text-lg font-semibold hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="clay-btn clay-btn-secondary w-full py-3 text-lg"
         >
           Deltag i spil
         </button>
@@ -114,33 +116,33 @@ export default function Home() {
 
       {showHow && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
           onClick={() => setShowHow(false)}
         >
           <div
-            className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative"
+            className="clay-card max-w-md w-full p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowHow(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              className="absolute top-3 right-3 text-warm-light hover:text-warm-mid text-2xl leading-none"
             >
               &times;
             </button>
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Sådan spiller man</h2>
-            <ol className="space-y-3 text-gray-600 text-sm list-decimal list-inside">
+            <h2 className="font-heading text-2xl font-bold mb-4 text-warm-dark">Sådan spiller man</h2>
+            <ol className="space-y-3 text-warm-mid text-sm list-decimal list-inside">
               <li>En vært opretter et rum og deler rumkoden med de andre spillere.</li>
               <li>Alle skriver et <strong>hemmeligt ord</strong> — det starter en kæde.</li>
               <li>I skiftende runder skal I enten <strong>tegne</strong> det forrige gæt eller <strong>gætte</strong> hvad tegningen forestiller.</li>
               <li>Kæderne roterer, så ingen ser deres egen kæde undervejs.</li>
               <li>Til sidst afsløres alle kæder trin for trin — og så griner I!</li>
             </ol>
-            <div className="mt-5 pt-4 border-t border-gray-100 text-xs text-gray-400 space-y-1">
+            <div className="mt-5 pt-4 border-t border-warm-border text-xs text-warm-light space-y-1">
               <p>3–12 spillere &middot; 90 sek. til at tegne &middot; 30 sek. til at gætte</p>
             </div>
             <button
               onClick={() => setShowHow(false)}
-              className="mt-4 w-full py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600"
+              className="clay-btn clay-btn-primary mt-4 w-full py-2"
             >
               Forstået!
             </button>

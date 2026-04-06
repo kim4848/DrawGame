@@ -35,30 +35,31 @@ export default function BurgerMenu() {
     <div className="fixed top-4 right-4 z-50">
       <button
         onClick={() => setOpen(!open)}
-        className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50"
+        className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 bg-white rounded-[var(--radius-clay-sm)] border-3 border-warm-border hover:bg-cream-dark"
+        style={{ boxShadow: '3px 3px 0px var(--color-card-shadow)' }}
         aria-label="Menu"
       >
-        <span className={`block w-5 h-0.5 bg-gray-600 transition-transform ${open ? 'rotate-45 translate-y-2' : ''}`} />
-        <span className={`block w-5 h-0.5 bg-gray-600 transition-opacity ${open ? 'opacity-0' : ''}`} />
-        <span className={`block w-5 h-0.5 bg-gray-600 transition-transform ${open ? '-rotate-45 -translate-y-2' : ''}`} />
+        <span className={`block w-5 h-0.5 bg-warm-dark transition-transform ${open ? 'rotate-45 translate-y-2' : ''}`} />
+        <span className={`block w-5 h-0.5 bg-warm-dark transition-opacity ${open ? 'opacity-0' : ''}`} />
+        <span className={`block w-5 h-0.5 bg-warm-dark transition-transform ${open ? '-rotate-45 -translate-y-2' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-3 space-y-2">
+        <div className="absolute right-0 mt-2 w-64 clay-card p-3 space-y-2">
           {canRejoin && (
             <button
               onClick={handleRejoin}
               disabled={rejoining}
-              className="w-full py-2 px-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:opacity-50 text-sm"
+              className="clay-btn clay-btn-accent w-full py-2 px-3 text-sm"
             >
               {rejoining ? 'Genopretter...' : `Genopret forbindelse (${roomCode})`}
             </button>
           )}
           {!canRejoin && (
-            <p className="text-gray-400 text-sm text-center py-1">Ingen aktiv session</p>
+            <p className="text-warm-light text-sm text-center py-1 font-medium">Ingen aktiv session</p>
           )}
           {error && (
-            <p className="text-red-500 text-xs text-center">{error}</p>
+            <p className="text-red-500 text-xs text-center font-medium">{error}</p>
           )}
         </div>
       )}

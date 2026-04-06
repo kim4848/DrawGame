@@ -25,8 +25,8 @@ export default function Reveal() {
 
   if (!loaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 text-lg">Indlæser...</p>
+      <div className="clay-bg flex items-center justify-center">
+        <p className="text-warm-mid text-lg font-heading font-medium">Indlæser...</p>
       </div>
     );
   }
@@ -36,28 +36,31 @@ export default function Reveal() {
   if (allDone) {
     const isHost = playerId === hostId;
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-blue-50 to-white">
-        <h1 className="text-3xl font-bold mb-4 text-gray-800">Spillet er slut – tak for denne gang!</h1>
-        {isHost && (
-          <button
-            onClick={async () => {
-              if (roomId && playerId) await markDone(roomId, playerId).catch(() => {});
-              clear();
-              navigate('/');
-            }}
-            className="px-8 py-3 bg-blue-500 text-white rounded-lg text-lg font-semibold hover:bg-blue-600"
-          >
-            Tilbage til start
-          </button>
-        )}
-        {!isHost && (
-          <button
-            onClick={() => { clear(); navigate('/'); }}
-            className="px-8 py-3 bg-gray-500 text-white rounded-lg text-lg font-semibold hover:bg-gray-600"
-          >
-            Tilbage til start
-          </button>
-        )}
+      <div className="clay-bg flex flex-col items-center justify-center p-4">
+        <div className="clay-card p-8 text-center max-w-md">
+          <h1 className="font-heading text-3xl font-bold mb-4 text-warm-dark">
+            Spillet er slut – tak for denne gang!
+          </h1>
+          {isHost ? (
+            <button
+              onClick={async () => {
+                if (roomId && playerId) await markDone(roomId, playerId).catch(() => {});
+                clear();
+                navigate('/');
+              }}
+              className="clay-btn clay-btn-primary px-8 py-3 text-lg"
+            >
+              Tilbage til start
+            </button>
+          ) : (
+            <button
+              onClick={() => { clear(); navigate('/'); }}
+              className="clay-btn clay-btn-soft px-8 py-3 text-lg"
+            >
+              Tilbage til start
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -76,9 +79,9 @@ export default function Reveal() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-4 bg-gradient-to-b from-blue-50 to-white">
-      <h1 className="text-3xl font-bold mb-2 text-gray-800">Hvad skete der?</h1>
-      <p className="text-gray-500 mb-6">
+    <div className="clay-bg flex flex-col items-center p-4">
+      <h1 className="font-heading text-3xl font-bold mb-2 text-warm-dark">Hvad skete der?</h1>
+      <p className="text-warm-mid mb-6 font-medium">
         Kæde {chainIndex + 1} af {chains.length} — startet af <strong>{chain.originPlayerName}</strong>
       </p>
 
@@ -86,19 +89,19 @@ export default function Reveal() {
         {visibleEntries.map((entry, i) => (
           <div
             key={i}
-            className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-in fade-in"
+            className="clay-card p-4 animate-fade-slide-in"
           >
-            <p className="text-xs text-gray-400 mb-1">
+            <p className="text-xs text-warm-light mb-1 font-heading font-medium">
               Runde {entry.roundNumber + 1} — {entry.playerName}
             </p>
             {entry.type === 'DRAW' ? (
               <img
                 src={entry.content || ''}
                 alt={`Tegning af ${entry.playerName}`}
-                className="w-full rounded border border-gray-100"
+                className="w-full rounded-[var(--radius-clay-sm)] border-2 border-warm-border"
               />
             ) : (
-              <p className="text-lg font-medium text-gray-800">
+              <p className="text-lg font-semibold text-warm-dark">
                 {entry.type === 'WORD' ? '📝' : '💬'} {entry.content}
               </p>
             )}
@@ -108,7 +111,7 @@ export default function Reveal() {
 
       <button
         onClick={handleNext}
-        className="px-8 py-3 bg-blue-500 text-white rounded-lg text-lg font-semibold hover:bg-blue-600"
+        className="clay-btn clay-btn-primary px-8 py-3 text-lg"
       >
         {hasMore ? 'Næste' : chainIndex < chains.length - 1 ? 'Næste kæde' : 'Se resultat'}
       </button>

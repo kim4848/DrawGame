@@ -18,7 +18,6 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const lastPos = useRef<{ x: number; y: number } | null>(null);
 
-  // Close color picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (colorPickerRef.current && !colorPickerRef.current.contains(e.target as Node)) {
@@ -103,21 +102,21 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <h2 className="text-xl font-semibold">
-        Tegn: <span className="text-blue-600">{prompt}</span>
+      <h2 className="font-heading text-xl font-semibold text-warm-dark">
+        Tegn: <span className="text-coral">{prompt}</span>
       </h2>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 justify-center">
+      <div className="clay-card p-3 flex flex-wrap items-center gap-2 justify-center">
         <button
           onClick={() => setTool('pen')}
-          className={`px-3 py-1.5 rounded text-sm ${tool === 'pen' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`clay-btn px-3 py-1.5 text-sm ${tool === 'pen' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
         >
           Pen
         </button>
         <button
           onClick={() => setTool('eraser')}
-          className={`px-3 py-1.5 rounded text-sm ${tool === 'eraser' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`clay-btn px-3 py-1.5 text-sm ${tool === 'eraser' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
         >
           Viskelæder
         </button>
@@ -127,29 +126,36 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
             <button
               key={c}
               onClick={() => { setColor(c); setTool('pen'); setShowColorPicker(false); }}
-              className={`w-7 h-7 rounded-full border-2 ${color === c && tool === 'pen' && !showColorPicker ? 'border-blue-500 scale-110' : 'border-gray-300'}`}
+              className={`w-7 h-7 rounded-full border-3 transition-transform ${
+                color === c && tool === 'pen' && !showColorPicker
+                  ? 'border-warm-dark scale-110'
+                  : 'border-warm-border'
+              }`}
               style={{ backgroundColor: c }}
             />
           ))}
           <div className="relative" ref={colorPickerRef}>
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
-              className={`w-7 h-7 rounded-full border-2 ${!COLORS.includes(color) && tool === 'pen' ? 'border-blue-500 scale-110' : 'border-gray-300'}`}
+              className={`w-7 h-7 rounded-full border-3 ${
+                !COLORS.includes(color) && tool === 'pen'
+                  ? 'border-warm-dark scale-110'
+                  : 'border-warm-border'
+              }`}
               style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
               title="Vælg farve"
             />
             {showColorPicker && (
-              <div className="absolute top-9 left-1/2 -translate-x-1/2 z-50 bg-white rounded-lg shadow-lg p-3 border border-gray-200 flex flex-col gap-2 items-center"
+              <div className="absolute top-9 left-1/2 -translate-x-1/2 z-50 clay-card p-3 flex flex-col gap-2 items-center"
                    data-testid="color-picker-dropdown">
                 <canvas
                   data-testid="color-picker-canvas"
                   width={160}
                   height={160}
-                  className="cursor-crosshair rounded"
+                  className="cursor-crosshair rounded-[var(--radius-clay-sm)]"
                   ref={(el) => {
                     if (!el) return;
                     const ctx = el.getContext('2d')!;
-                    // Draw hue/saturation grid
                     for (let x = 0; x < 160; x++) {
                       for (let y = 0; y < 160; y++) {
                         const hue = (x / 160) * 360;
@@ -172,7 +178,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
                   }}
                 />
                 <div className="flex items-center gap-2 w-full">
-                  <div className="w-6 h-6 rounded-full border border-gray-300 shrink-0" style={{ backgroundColor: color }} />
+                  <div className="w-6 h-6 rounded-full border-2 border-warm-border shrink-0" style={{ backgroundColor: color }} />
                   <input
                     type="color"
                     value={color}
@@ -180,7 +186,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
                     className="w-6 h-6 cursor-pointer border-0 p-0 bg-transparent shrink-0"
                     title="Systemfarvevælger"
                   />
-                  <span className="text-xs text-gray-500 font-mono">{color}</span>
+                  <span className="text-xs text-warm-mid font-mono">{color}</span>
                 </div>
               </div>
             )}
@@ -193,12 +199,12 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
           max="20"
           value={brushSize}
           onChange={(e) => setBrushSize(Number(e.target.value))}
-          className="w-24"
+          className="w-24 accent-coral"
         />
 
         <button
           onClick={clearCanvas}
-          className="px-3 py-1.5 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
+          className="clay-btn px-3 py-1.5 text-sm bg-red-100 border-red-200 text-red-700 hover:bg-red-200"
         >
           Ryd
         </button>
@@ -207,7 +213,8 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
       {/* Canvas */}
       <canvas
         ref={canvasRef}
-        className="w-full max-w-2xl border-2 border-gray-300 rounded-lg cursor-crosshair touch-none bg-white"
+        className="w-full max-w-2xl border-3 border-warm-border rounded-[var(--radius-clay)] cursor-crosshair touch-none bg-white"
+        style={{ boxShadow: '6px 6px 0px var(--color-card-shadow)' }}
         onMouseDown={startDraw}
         onMouseMove={draw}
         onMouseUp={endDraw}
@@ -220,7 +227,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
       <button
         onClick={handleSubmit}
         disabled={disabled}
-        className="px-8 py-3 bg-blue-500 text-white rounded-lg text-lg font-semibold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="clay-btn clay-btn-primary px-8 py-3 text-lg"
       >
         Indsend
       </button>

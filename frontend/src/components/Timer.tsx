@@ -26,7 +26,7 @@ export default function Timer({ seconds, onExpire }: TimerProps) {
   const urgent = remaining <= 10;
 
   return (
-    <div className={`text-lg font-mono ${urgent ? 'text-red-500 font-bold' : 'text-gray-600'}`}>
+    <div className={`font-heading text-lg font-bold ${urgent ? 'text-coral animate-wiggle' : 'text-warm-mid'}`}>
       Tid tilbage: {remaining}s
     </div>
   );

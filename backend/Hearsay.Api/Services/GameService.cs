@@ -197,7 +197,7 @@ public class GameService
                     if (submittedCount >= room.NumPlayers)
                     {
                         int nextRound = currentRound + 1;
-                        if (nextRound > room.NumPlayers)
+                        if (nextRound >= room.NumPlayers)
                         {
                             await _db.UpdateRoomStatus(roomId, "REVEAL");
                             room = (await _db.GetRoomById(roomId))!;
@@ -262,7 +262,7 @@ public class GameService
         if (submittedCount >= room.NumPlayers)
         {
             int nextRound = round + 1;
-            if (nextRound > room.NumPlayers)
+            if (nextRound >= room.NumPlayers)
             {
                 await _db.UpdateRoomStatus(roomId, "REVEAL");
             }
