@@ -6,6 +6,7 @@ import type {
   RevealResponse,
   GalleryDrawing,
 } from './types';
+import { retryWithBackoff } from './utils/network';
 
 const BASE = '';
 
@@ -64,8 +65,13 @@ export async function startGame(
 }
 
 export async function pollRoom(roomId: string, playerId: string): Promise<PollResponse> {
-  const res = await fetch(`${BASE}/api/rooms/${roomId}/poll?playerId=${playerId}`);
-  return json(res);
+  return retryWithBackoff(async () => {
+    const res = await fetch(`${BASE}/api/rooms/${roomId}/poll?playerId=${playerId}`);
+    return json(res);
+  }, {
+    maxRetries: 2,
+    initialDelayMs: 500,
+  });
 }
 
 export async function submitEntry(
@@ -76,12 +82,17 @@ export async function submitEntry(
   type: string,
   content: string
 ): Promise<void> {
-  const res = await fetch(`${BASE}/api/rooms/${roomId}/submit`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ playerId, chainId, round, type, content }),
+  return retryWithBackoff(async () => {
+    const res = await fetch(`${BASE}/api/rooms/${roomId}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerId, chainId, round, type, content }),
+    });
+    await json(res);
+  }, {
+    maxRetries: 3,
+    initialDelayMs: 1000,
   });
-  await json(res);
 }
 
 export async function uploadDrawing(
@@ -90,14 +101,19 @@ export async function uploadDrawing(
   round: number,
   blob: Blob
 ): Promise<string> {
-  const form = new FormData();
-  form.append('roomId', roomId);
-  form.append('chainId', chainId);
-  form.append('round', round.toString());
-  form.append('file', blob, 'drawing.png');
-  const res = await fetch(`${BASE}/api/drawings/upload`, { method: 'POST', body: form });
-  const data = await json<{ blobUrl: string }>(res);
-  return data.blobUrl;
+  return retryWithBackoff(async () => {
+    const form = new FormData();
+    form.append('roomId', roomId);
+    form.append('chainId', chainId);
+    form.append('round', round.toString());
+    form.append('file', blob, 'drawing.png');
+    const res = await fetch(`${BASE}/api/drawings/upload`, { method: 'POST', body: form });
+    const data = await json<{ blobUrl: string }>(res);
+    return data.blobUrl;
+  }, {
+    maxRetries: 3,
+    initialDelayMs: 1000,
+  });
 }
 
 export async function getRevealData(roomId: string): Promise<RevealResponse> {

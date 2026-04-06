@@ -6,6 +6,7 @@ import { useRoomPoll } from '../hooks/useRoomPoll';
 import DrawCanvas from '../components/DrawCanvas';
 import GuessInput from '../components/GuessInput';
 import Timer from '../components/Timer';
+import ConfirmModal from '../components/ConfirmModal';
 import { addToast } from '../store/toastStore';
 import { getRandomWord, type RandomWord } from '../utils/wordGenerator';
 
@@ -21,8 +22,10 @@ export default function Play() {
   const [wordEmoji, setWordEmoji] = useState('');
   const [guessInput, setGuessInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
-  useRoomPoll();
+  const { isConnected } = useRoomPoll();
 
   useEffect(() => {
     if (!roomId || !playerId) {
@@ -32,6 +35,19 @@ export default function Play() {
     if (roomStatus === 'REVEAL') navigate('/reveal');
     if (roomStatus === 'DONE') navigate('/');
   }, [roomId, playerId, roomStatus, navigate]);
+
+  // Prevent accidental browser close/refresh during active game
+  useEffect(() => {
+    if (roomStatus !== 'ACTIVE') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; // Required for Chrome
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [roomStatus]);
 
   useEffect(() => {
     setSubmitted(false);
@@ -99,11 +115,14 @@ export default function Play() {
 
   if (isSubmitted) {
     return (
-      <div className="clay-bg flex flex-col items-center justify-center p-4">
-        <div className="clay-card p-8 text-center">
+      <div className="clay-bg flex flex-col items-center justify-center p-4 min-h-screen">
+        <div className="clay-card p-6 sm:p-8 text-center max-w-sm">
           <div className="text-4xl mb-4 animate-clay-bounce">&#9203;</div>
-          <h2 className="font-heading text-2xl font-semibold text-warm-dark">Venter på de andre spillere...</h2>
-          <p className="text-warm-mid mt-2">Runde {currentRound + 1} af {totalRounds}</p>
+          <h2 className="font-heading text-xl sm:text-2xl font-semibold text-warm-dark">Venter på de andre spillere...</h2>
+          <p className="text-warm-mid mt-2 text-sm sm:text-base">Runde {currentRound + 1} af {totalRounds}</p>
+          {!isConnected && (
+            <p className="text-red-600 mt-3 text-xs">⚠️ Ingen forbindelse</p>
+          )}
         </div>
       </div>
     );
@@ -112,16 +131,21 @@ export default function Play() {
   const timerSeconds = roundType === 'DRAW' ? drawTimer : guessTimer;
 
   return (
-    <div className="clay-bg flex flex-col items-center p-4">
+    <div className="clay-bg flex flex-col items-center p-2 sm:p-4">
       <div className="w-full max-w-2xl">
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-warm-mid font-heading font-medium">Runde {currentRound + 1} af {totalRounds}</p>
+        <div className="sticky top-0 z-10 bg-cream/95 backdrop-blur-sm py-2 sm:py-0 sm:bg-transparent flex justify-between items-center mb-2 sm:mb-4 px-2 sm:px-0 -mx-2 sm:mx-0">
+          <div className="flex items-center gap-2">
+            <p className="text-warm-mid font-heading font-medium text-sm sm:text-base">Runde {currentRound + 1} af {totalRounds}</p>
+            {!isConnected && (
+              <span className="text-red-600 text-xs" title="Ingen forbindelse">⚠️</span>
+            )}
+          </div>
           <Timer key={`${currentRound}-${roundType}`} seconds={timerSeconds} onExpire={handleTimerExpire} />
         </div>
 
         {roundType === 'WORD' && (
-          <div className="flex flex-col items-center gap-4">
-            <h2 className="font-heading text-xl font-semibold text-warm-dark">Skriv et ord eller en sætning</h2>
+          <div className="flex flex-col items-center gap-4 px-2">
+            <h2 className="font-heading text-lg sm:text-xl font-semibold text-warm-dark text-center">Skriv et ord eller en sætning</h2>
             <div className="w-full max-w-md flex gap-2">
               <input
                 type="text"
@@ -129,14 +153,17 @@ export default function Play() {
                 onChange={(e) => { setWordInput(e.target.value); setWordEmoji(''); }}
                 onKeyDown={(e) => e.key === 'Enter' && wordInput.trim() && handleWordSubmit()}
                 placeholder="F.eks. 'En kat på et tag'"
-                className="clay-input flex-1 px-4 py-3 text-lg"
+                className="clay-input flex-1 px-4 py-3 text-base sm:text-lg"
                 autoFocus
+                autoComplete="off"
+                autoCapitalize="sentences"
               />
               <button
                 type="button"
                 onClick={() => { const r: RandomWord = getRandomWord(); setWordInput(r.word); setWordEmoji(r.emoji); }}
                 title="Få et tilfældigt ord"
-                className="clay-btn clay-btn-accent px-3 py-3 text-xl"
+                className="clay-btn clay-btn-accent px-3 py-3 text-xl min-h-[52px] min-w-[52px]"
+                aria-label="Få et tilfældigt ord"
               >
                 🎲
               </button>
@@ -147,9 +174,16 @@ export default function Play() {
             <button
               onClick={handleWordSubmit}
               disabled={submitting || !wordInput.trim()}
-              className="clay-btn clay-btn-primary px-8 py-3 text-lg"
+              className="clay-btn clay-btn-primary px-8 py-3 text-lg min-h-[48px] w-full sm:w-auto max-w-xs relative"
             >
-              Indsend
+              {submitting ? (
+                <>
+                  <span className="opacity-50">Indsender</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl animate-spin">⏳</span>
+                </>
+              ) : (
+                'Indsend'
+              )}
             </button>
           </div>
         )}
@@ -172,6 +206,24 @@ export default function Play() {
           />
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showExitConfirm}
+        title="Forlad spillet?"
+        message="Du er i gang med et aktivt spil. Er du sikker på at du vil forlade?"
+        confirmText="Ja, forlad"
+        cancelText="Bliv"
+        onConfirm={() => {
+          setShowExitConfirm(false);
+          if (pendingNavigation) {
+            navigate(pendingNavigation);
+          }
+        }}
+        onCancel={() => {
+          setShowExitConfirm(false);
+          setPendingNavigation(null);
+        }}
+      />
     </div>
   );
 }

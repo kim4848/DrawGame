@@ -37,11 +37,26 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    canvas.width = canvas.offsetWidth;
-    canvas.height = 450;
+
+    // High-DPI/Retina display scaling
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = canvas.offsetWidth;
+    const maxHeight = Math.min(450, window.innerHeight * 0.5);
+
+    // Set internal canvas resolution (scaled for high-DPI)
+    canvas.width = displayWidth * dpr;
+    canvas.height = maxHeight * dpr;
+
+    // Set display size (CSS pixels)
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${maxHeight}px`;
+
     const ctx = canvas.getContext('2d')!;
+    // Scale all drawing operations by devicePixelRatio
+    ctx.scale(dpr, dpr);
+
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, displayWidth, maxHeight);
     undoStack.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
     redoStack.current = [];
   }, []);
@@ -160,59 +175,69 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
       </h2>
 
       {/* Toolbar */}
-      <div className="clay-card p-3 flex flex-wrap items-center gap-2 justify-center">
+      <div className="clay-card p-3 flex flex-wrap items-center gap-2 justify-center w-full max-w-2xl">
         <button
           onClick={() => setTool('pen')}
-          className={`clay-btn px-3 py-1.5 text-sm ${tool === 'pen' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
+          className={`clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm min-h-[44px] ${tool === 'pen' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
         >
           Pen
         </button>
         <button
           onClick={() => setTool('eraser')}
-          className={`clay-btn px-3 py-1.5 text-sm ${tool === 'eraser' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
+          className={`clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm min-h-[44px] ${tool === 'eraser' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
         >
           Viskelæder
         </button>
 
-        <div className="flex gap-1 items-center">
+        <div className="flex gap-1 sm:gap-1 items-center flex-wrap justify-center">
           {COLORS.map((c) => (
             <button
               key={c}
               onClick={() => { setColor(c); setTool('pen'); setShowColorPicker(false); }}
-              className={`w-7 h-7 rounded-full border-3 transition-transform ${
+              className={`w-11 h-11 sm:w-7 sm:h-7 rounded-full border-3 transition-transform ${
                 color === c && tool === 'pen' && !showColorPicker
                   ? 'border-warm-dark scale-110'
                   : 'border-warm-border'
               }`}
               style={{ backgroundColor: c }}
+              aria-label={`Vælg farve ${c}`}
             />
           ))}
           <div className="relative" ref={colorPickerRef}>
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
-              className={`w-7 h-7 rounded-full border-3 ${
+              className={`w-11 h-11 sm:w-7 sm:h-7 rounded-full border-3 ${
                 !COLORS.includes(color) && tool === 'pen'
                   ? 'border-warm-dark scale-110'
                   : 'border-warm-border'
               }`}
               style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
               title="Vælg farve"
+              aria-label="Vælg tilpasset farve"
             />
             {showColorPicker && (
-              <div className="absolute top-9 left-1/2 -translate-x-1/2 z-50 clay-card p-3 flex flex-col gap-2 items-center"
+              <div className="fixed sm:absolute top-1/2 sm:top-9 left-1/2 -translate-x-1/2 sm:-translate-y-0 -translate-y-1/2 z-50 clay-card p-4 flex flex-col gap-2 items-center relative"
                    data-testid="color-picker-dropdown">
+                <button
+                  onClick={() => setShowColorPicker(false)}
+                  className="absolute top-2 right-2 text-warm-mid hover:text-warm-dark text-xl leading-none w-8 h-8 flex items-center justify-center sm:hidden"
+                  aria-label="Luk farvevælger"
+                >
+                  &times;
+                </button>
                 <canvas
                   data-testid="color-picker-canvas"
-                  width={160}
-                  height={160}
-                  className="cursor-crosshair rounded-[var(--radius-clay-sm)]"
+                  width={200}
+                  height={200}
+                  className="cursor-crosshair rounded-[var(--radius-clay-sm)] w-[200px] h-[200px] sm:w-[160px] sm:h-[160px]"
                   ref={(el) => {
                     if (!el) return;
                     const ctx = el.getContext('2d')!;
-                    for (let x = 0; x < 160; x++) {
-                      for (let y = 0; y < 160; y++) {
-                        const hue = (x / 160) * 360;
-                        const lightness = 100 - (y / 160) * 100;
+                    const size = 200;
+                    for (let x = 0; x < size; x++) {
+                      for (let y = 0; y < size; y++) {
+                        const hue = (x / size) * 360;
+                        const lightness = 100 - (y / size) * 100;
                         ctx.fillStyle = `hsl(${hue}, 100%, ${lightness}%)`;
                         ctx.fillRect(x, y, 1, 1);
                       }
@@ -252,28 +277,32 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
           max="20"
           value={brushSize}
           onChange={(e) => setBrushSize(Number(e.target.value))}
-          className="w-24 accent-coral"
+          className="w-32 sm:w-24 accent-coral h-10 sm:h-auto"
+          aria-label="Penselstørrelse"
         />
 
         <button
           onClick={undo}
           disabled={undoStack.current.length <= 1}
-          className="clay-btn px-3 py-1.5 text-sm clay-btn-soft"
+          className="clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm clay-btn-soft min-h-[44px]"
           title="Fortryd (Ctrl+Z)"
+          aria-label="Fortryd"
         >
           Fortryd
         </button>
         <button
           onClick={redo}
           disabled={redoStack.current.length === 0}
-          className="clay-btn px-3 py-1.5 text-sm clay-btn-soft"
+          className="clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm clay-btn-soft min-h-[44px]"
           title="Gendan (Ctrl+Y)"
+          aria-label="Gendan"
         >
           Gendan
         </button>
         <button
           onClick={clearCanvas}
-          className="clay-btn px-3 py-1.5 text-sm bg-red-100 border-red-200 text-red-700 hover:bg-red-200"
+          className="clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm bg-red-100 border-red-200 text-red-700 hover:bg-red-200 min-h-[44px]"
+          aria-label="Ryd canvas"
         >
           Ryd
         </button>
@@ -291,14 +320,24 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
         onTouchStart={startDraw}
         onTouchMove={draw}
         onTouchEnd={endDraw}
+        aria-label={`Tegneområde for: ${prompt}`}
+        role="img"
+        aria-live="polite"
       />
 
       <button
         onClick={handleSubmit}
         disabled={disabled}
-        className="clay-btn clay-btn-primary px-8 py-3 text-lg"
+        className="clay-btn clay-btn-primary px-8 py-3 text-lg min-h-[48px] w-full sm:w-auto max-w-xs relative"
       >
-        Indsend
+        {disabled ? (
+          <>
+            <span className="opacity-50">Indsender</span>
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl animate-spin">⏳</span>
+          </>
+        ) : (
+          'Indsend'
+        )}
       </button>
     </div>
   );
