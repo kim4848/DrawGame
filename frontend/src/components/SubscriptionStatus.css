@@ -1,0 +1,64 @@
+.subscription-status {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.subscription-status--premium {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #fbbf24;
+}
+
+.subscription-status--free {
+  border: 1px solid #e5e7eb;
+}
+
+.subscription-status__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.subscription-status__label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.subscription-status__expiry {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.subscription-status__expiry--warning {
+  color: #d97706;
+  font-weight: 500;
+}
+
+.subscription-status__expiry--warning svg {
+  color: #f59e0b;
+}
+
+.subscription-status__message {
+  font-size: 0.9375rem;
+  color: #4b5563;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.subscription-status .btn--sm {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .subscription-status {
+    padding: 1rem;
+  }
+}

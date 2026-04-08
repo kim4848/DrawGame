@@ -17,6 +17,7 @@ interface GameState {
   drawTimer: number;
   guessTimer: number;
   nextRoomCode: string | null;
+  wordPackId: string | null;
 
   setPlayer: (id: string) => void;
   setRoom: (id: string, code: string) => void;
@@ -47,6 +48,7 @@ export const useGameStore = create<GameState>((set) => ({
   drawTimer: 90,
   guessTimer: 30,
   nextRoomCode: null,
+  wordPackId: null,
 
   setPlayer: (id) => {
     localStorage.setItem('myPlayerId', id);
@@ -77,6 +79,7 @@ export const useGameStore = create<GameState>((set) => ({
       drawTimer: data.drawTimer ?? 90,
       guessTimer: data.guessTimer ?? 30,
       nextRoomCode: data.nextRoomCode ?? null,
+      wordPackId: data.wordPackId ?? null,
     });
   },
 
@@ -101,6 +104,7 @@ export const useGameStore = create<GameState>((set) => ({
       drawTimer: 90,
       guessTimer: 30,
       nextRoomCode: null,
+      wordPackId: null,
     });
   },
 }));

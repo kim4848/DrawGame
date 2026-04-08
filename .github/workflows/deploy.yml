@@ -1,6 +1,9 @@
 name: Deploy to Production
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       confirm:
@@ -15,12 +18,23 @@ jobs:
 
     steps:
       - name: Validate deployment confirmation
+        if: github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ github.event.inputs.confirm }}" != "deploy" ]; then
             echo "❌ Deployment not confirmed. Please type 'deploy' to proceed."
             exit 1
           fi
           echo "✅ Deployment confirmed"
+
+      - name: Deployment trigger info
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "🤖 Automatic deployment triggered by push to master"
+            echo "📝 Commit: ${{ github.sha }}"
+            echo "👤 Author: ${{ github.event.head_commit.author.name }}"
+          else
+            echo "👤 Manual deployment triggered by ${{ github.actor }}"
+          fi
 
       - name: Setup SSH
         run: |
@@ -36,8 +50,9 @@ jobs:
 
       - name: Pull latest code
         run: |
+          BRANCH="${{ github.ref_name }}"
           ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "cd ${{ secrets.DEPLOY_PATH }} && git fetch origin && git checkout main && git pull origin main"
+            "cd ${{ secrets.DEPLOY_PATH }} && git fetch origin && git checkout $BRANCH && git pull origin $BRANCH"
 
       - name: Stop current deployment
         run: |
@@ -62,9 +77,10 @@ jobs:
           echo "✅ Deployment completed successfully!"
           echo "📊 Summary:"
           echo "  - Server: ${{ secrets.DEPLOY_HOST }}"
-          echo "  - Branch: main"
+          echo "  - Branch: ${{ github.ref_name }}"
           echo "  - Commit: $DEPLOYED_COMMIT"
           echo "  - Deployed by: ${{ github.actor }}"
+          echo "  - Trigger: ${{ github.event_name }}"
           echo "  - Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
 
       - name: Cleanup

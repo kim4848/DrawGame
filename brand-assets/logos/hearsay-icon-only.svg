@@ -1,0 +1,45 @@
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="coralMintGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F08080;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#98D8C8;stop-opacity:1" />
+    </linearGradient>
+
+    <filter id="clayShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="0" dy="5" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(8, 8)">
+    <!-- Speech bubble base with rounded clay aesthetic -->
+    <path d="M 60 20 C 60 10 52 2 42 2 L 22 2 C 12 2 4 10 4 20 L 4 44 C 4 54 12 62 22 62 L 26 62 L 32 74 L 38 62 L 42 62 C 52 62 60 54 60 44 Z"
+          fill="url(#coralMintGradient)"
+          filter="url(#clayShadow)"
+          stroke="#E06666"
+          stroke-width="4"
+          stroke-linejoin="round"/>
+
+    <!-- Drawing stroke inside bubble -->
+    <path d="M 20 26 L 28 34 L 36 28 L 44 40"
+          stroke="#FFF"
+          stroke-width="5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"/>
+
+    <!-- Pencil/brush tip accent -->
+    <circle cx="44" cy="40" r="4" fill="#FFB366"/>
+
+    <!-- Small detail dots for clay texture -->
+    <circle cx="16" cy="18" r="2" fill="#FFFFFF" opacity="0.3"/>
+    <circle cx="48" cy="24" r="2" fill="#FFFFFF" opacity="0.3"/>
+  </g>
+</svg>

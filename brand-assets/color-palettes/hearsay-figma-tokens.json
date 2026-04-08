@@ -1,0 +1,242 @@
+{
+  "global": {
+    "colors": {
+      "primary": {
+        "coral": {
+          "value": "#F08080",
+          "type": "color",
+          "description": "Primary brand color - used for host actions and primary CTAs"
+        },
+        "coral-light": {
+          "value": "#FFB3B3",
+          "type": "color"
+        },
+        "coral-dark": {
+          "value": "#E06666",
+          "type": "color"
+        }
+      },
+      "secondary": {
+        "mint": {
+          "value": "#98D8C8",
+          "type": "color",
+          "description": "Secondary brand color - used for participant actions"
+        },
+        "mint-light": {
+          "value": "#B8E6D8",
+          "type": "color"
+        },
+        "mint-dark": {
+          "value": "#7AC4B0",
+          "type": "color"
+        }
+      },
+      "accent": {
+        "amber": {
+          "value": "#FFB366",
+          "type": "color",
+          "description": "Accent color for playful elements"
+        },
+        "amber-light": {
+          "value": "#FFCC99",
+          "type": "color"
+        },
+        "amber-dark": {
+          "value": "#FF9933",
+          "type": "color"
+        },
+        "lavender": {
+          "value": "#D4C5F9",
+          "type": "color"
+        },
+        "lavender-light": {
+          "value": "#E6DDFF",
+          "type": "color"
+        },
+        "lavender-dark": {
+          "value": "#B8A8E8",
+          "type": "color"
+        }
+      },
+      "neutral": {
+        "cream": {
+          "value": "#FAF7F0",
+          "type": "color",
+          "description": "Background base color"
+        },
+        "cream-dark": {
+          "value": "#F0EBE0",
+          "type": "color"
+        },
+        "warm-mid": {
+          "value": "#E8B4B8",
+          "type": "color"
+        },
+        "warm-light": {
+          "value": "#7A5C5C",
+          "type": "color",
+          "description": "WCAG AA compliant - updated from #A89090"
+        }
+      },
+      "state": {
+        "success": {
+          "value": "#5DB075",
+          "type": "color"
+        },
+        "success-light": {
+          "value": "#8FD6A0",
+          "type": "color"
+        },
+        "success-dark": {
+          "value": "#3A9656",
+          "type": "color"
+        },
+        "error": {
+          "value": "#E74C3C",
+          "type": "color"
+        },
+        "error-light": {
+          "value": "#FF6B5B",
+          "type": "color"
+        },
+        "error-dark": {
+          "value": "#C0392B",
+          "type": "color"
+        },
+        "warning": {
+          "value": "#F39C12",
+          "type": "color"
+        },
+        "warning-light": {
+          "value": "#FFBD4A",
+          "type": "color"
+        },
+        "warning-dark": {
+          "value": "#D68910",
+          "type": "color"
+        },
+        "info": {
+          "value": "#3498DB",
+          "type": "color"
+        },
+        "info-light": {
+          "value": "#5DADE2",
+          "type": "color"
+        },
+        "info-dark": {
+          "value": "#2874A6",
+          "type": "color"
+        }
+      }
+    },
+    "typography": {
+      "font-family": {
+        "heading": {
+          "value": "Fredoka",
+          "type": "fontFamilies",
+          "description": "Bold, rounded, friendly - used for headings and display text"
+        },
+        "body": {
+          "value": "Nunito",
+          "type": "fontFamilies",
+          "description": "Clean, readable - used for body text and UI elements"
+        }
+      },
+      "font-weight": {
+        "regular": {
+          "value": "400",
+          "type": "fontWeights"
+        },
+        "medium": {
+          "value": "500",
+          "type": "fontWeights"
+        },
+        "semibold": {
+          "value": "600",
+          "type": "fontWeights"
+        },
+        "bold": {
+          "value": "700",
+          "type": "fontWeights"
+        },
+        "extrabold": {
+          "value": "800",
+          "type": "fontWeights"
+        }
+      }
+    },
+    "spacing": {
+      "scale": {
+        "xs": {
+          "value": "4px",
+          "type": "spacing"
+        },
+        "sm": {
+          "value": "8px",
+          "type": "spacing"
+        },
+        "md": {
+          "value": "12px",
+          "type": "spacing"
+        },
+        "lg": {
+          "value": "16px",
+          "type": "spacing"
+        },
+        "xl": {
+          "value": "24px",
+          "type": "spacing"
+        },
+        "2xl": {
+          "value": "32px",
+          "type": "spacing"
+        },
+        "3xl": {
+          "value": "48px",
+          "type": "spacing"
+        }
+      }
+    },
+    "shadows": {
+      "clay": {
+        "sm": {
+          "value": "0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05)",
+          "type": "boxShadow",
+          "description": "Small clay depth effect"
+        },
+        "md": {
+          "value": "0 4px 0 rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
+          "type": "boxShadow",
+          "description": "Medium clay depth effect"
+        },
+        "lg": {
+          "value": "0 6px 0 rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08)",
+          "type": "boxShadow",
+          "description": "Large clay depth effect"
+        }
+      }
+    },
+    "border-radius": {
+      "sm": {
+        "value": "8px",
+        "type": "borderRadius"
+      },
+      "md": {
+        "value": "12px",
+        "type": "borderRadius"
+      },
+      "lg": {
+        "value": "16px",
+        "type": "borderRadius"
+      },
+      "xl": {
+        "value": "24px",
+        "type": "borderRadius"
+      },
+      "full": {
+        "value": "9999px",
+        "type": "borderRadius"
+      }
+    }
+  }
+}

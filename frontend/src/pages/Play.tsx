@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { submitEntry, uploadDrawing } from '../api';
+import { submitEntry, uploadDrawing, getRandomWordFromPack } from '../api';
 import { useGameStore } from '../store/gameStore';
 import { useRoomPoll } from '../hooks/useRoomPoll';
 import DrawCanvas from '../components/DrawCanvas';
@@ -14,7 +14,7 @@ export default function Play() {
   const navigate = useNavigate();
   const {
     roomId, playerId, roomStatus, currentRound, totalRounds, roundType,
-    assignment, hasSubmitted, drawTimer, guessTimer
+    assignment, hasSubmitted, drawTimer, guessTimer, wordPackId
   } = useGameStore();
 
   const [submitting, setSubmitting] = useState(false);
@@ -26,6 +26,28 @@ export default function Play() {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   const { isConnected } = useRoomPoll();
+
+  const handleDiceClick = async () => {
+    try {
+      if (wordPackId) {
+        const { word } = await getRandomWordFromPack(wordPackId);
+        setWordInput(word);
+        setWordEmoji(''); // Word packs don't include emojis
+      } else {
+        const r: RandomWord = getRandomWord();
+        setWordInput(r.word);
+        setWordEmoji(r.emoji);
+      }
+    } catch (error: any) {
+      // Fall back to hardcoded words if API fails
+      const r: RandomWord = getRandomWord();
+      setWordInput(r.word);
+      setWordEmoji(r.emoji);
+      if (error.message?.includes('premium')) {
+        addToast('Denne ordpakke kræver premium abonnement', 'error');
+      }
+    }
+  };
 
   useEffect(() => {
     if (!roomId || !playerId) {
@@ -160,7 +182,7 @@ export default function Play() {
               />
               <button
                 type="button"
-                onClick={() => { const r: RandomWord = getRandomWord(); setWordInput(r.word); setWordEmoji(r.emoji); }}
+                onClick={handleDiceClick}
                 title="Få et tilfældigt ord"
                 className="clay-btn clay-btn-accent px-3 py-3 text-xl min-h-[52px] min-w-[52px]"
                 aria-label="Få et tilfældigt ord"

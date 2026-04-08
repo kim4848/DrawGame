@@ -191,8 +191,20 @@ export default function Reveal() {
       setStarting(true);
       try {
         const res = await playAgain(roomId, playerId);
-        // Update store and navigate in quick succession
-        // Navigate first to avoid Reveal's useEffect re-fetching with new roomId
+        // Clear old game state before setting new room
+        // This prevents Lobby's useEffect from redirecting based on stale roomStatus
+        useGameStore.setState({
+          roomStatus: null,
+          players: [],
+          assignment: null,
+          allSubmitted: false,
+          hasSubmitted: false,
+          currentRound: 0,
+          totalRounds: 0,
+          roundType: null,
+          nextRoomCode: null,
+        });
+        // Set new room/player IDs
         setPlayer(res.playerId);
         setRoom(res.roomId, res.roomCode);
         setHostId(res.playerId);

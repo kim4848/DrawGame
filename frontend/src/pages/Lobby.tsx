@@ -5,6 +5,7 @@ import { startGame } from '../api';
 import { useGameStore } from '../store/gameStore';
 import { addToast } from '../store/toastStore';
 import { useRoomPoll } from '../hooks/useRoomPoll';
+import WordPackSelector from '../components/WordPackSelector';
 
 export default function Lobby() {
   const navigate = useNavigate();
@@ -23,8 +24,10 @@ export default function Lobby() {
 
   const [copied, setCopied] = useState(false);
   const [timerPreset, setTimerPreset] = useState<'short' | 'normal' | 'long'>('normal');
+  const [selectedWordPackId, setSelectedWordPackId] = useState<string | undefined>();
 
-  const shareLink = `${window.location.origin}/join/${roomCode}`;
+  const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || window.location.origin;
+  const shareLink = `${siteUrl}/join/${roomCode}`;
 
   const handleCopyLink = async () => {
     try {
@@ -56,57 +59,57 @@ export default function Lobby() {
     if (!roomId || !playerId) return;
     try {
       const t = timerConfig[timerPreset];
-      await startGame(roomId, playerId, t.draw, t.guess);
+      await startGame(roomId, playerId, t.draw, t.guess, selectedWordPackId);
     } catch (e: any) {
       addToast(e.message || 'Kunne ikke starte spillet.', 'error');
     }
   };
 
   return (
-    <div className="clay-bg flex flex-col items-center justify-center p-4">
-      <h1 className="font-heading text-3xl font-bold mb-2 text-warm-dark">Lobby</h1>
+    <div className="clay-bg flex flex-col items-center justify-center p-4 min-h-screen">
+      <h1 className="font-heading text-2xl sm:text-3xl font-bold mb-2 text-warm-dark">Lobby</h1>
 
       <div className="mb-6 text-center">
         <p className="text-warm-mid text-sm mb-1 font-medium">Rumkode</p>
-        <p className="font-heading text-4xl font-bold tracking-widest text-coral" data-testid="room-code">
+        <p className="font-heading text-3xl sm:text-4xl font-bold tracking-widest text-coral" data-testid="room-code">
           {roomCode}
         </p>
         {roomCode && (
-          <div className="mt-4 clay-card inline-block p-3">
-            <QRCodeSVG value={shareLink} size={160} />
+          <div className="mt-4 clay-card inline-block p-2 sm:p-3">
+            <QRCodeSVG value={shareLink} size={120} className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px]" width={160} height={160} />
           </div>
         )}
-        <p className="text-warm-light text-sm mt-2">Scan for at deltage</p>
+        <p className="text-warm-mid text-xs sm:text-sm mt-2">Scan for at deltage</p>
         <button
           onClick={handleCopyLink}
-          className="clay-btn clay-btn-soft mt-2 px-4 py-2 text-sm"
+          className="clay-btn clay-btn-soft mt-2 px-4 py-2.5 text-sm min-h-[44px]"
         >
           {copied ? 'Link kopieret!' : 'Kopiér invitationslink'}
         </button>
       </div>
 
-      <div className="w-full max-w-sm mb-6">
-        <h2 className="font-heading text-lg font-semibold mb-2 text-warm-dark">
+      <div className="w-full max-w-sm mb-6 px-2">
+        <h2 className="font-heading text-base sm:text-lg font-semibold mb-2 text-warm-dark">
           Spillere ({players.length})
         </h2>
         <ul className="space-y-2">
           {players.map((p) => (
             <li
               key={p.id}
-              className={`flex items-center gap-2 px-4 py-2 rounded-[var(--radius-clay-sm)] border-2 ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-2 rounded-[var(--radius-clay-sm)] border-2 ${
                 p.isActive
                   ? 'bg-white border-warm-border'
-                  : 'bg-cream-dark border-warm-border text-warm-light'
+                  : 'bg-cream-dark border-warm-border text-warm-mid'
               }`}
             >
-              <span className={`w-3 h-3 rounded-full border-2 ${
+              <span className={`w-3 h-3 rounded-full border-2 shrink-0 ${
                 p.isActive
                   ? 'bg-mint border-mint-dark'
                   : 'bg-warm-border border-warm-border-dark'
               }`} />
-              <span className="font-medium">{p.name}</span>
+              <span className="font-medium text-sm sm:text-base truncate">{p.name}</span>
               {p.id === hostId && (
-                <span className="ml-auto text-xs text-coral font-heading font-bold">Vært</span>
+                <span className="ml-auto text-xs text-coral font-heading font-bold shrink-0">Vært</span>
               )}
             </li>
           ))}
@@ -114,15 +117,19 @@ export default function Lobby() {
       </div>
 
       {isHost ? (
-        <div className="flex flex-col items-center gap-4">
-          <div className="clay-card p-3 w-full max-w-sm">
+        <div className="flex flex-col items-center gap-4 w-full max-w-sm px-2">
+          <WordPackSelector
+            selectedPackId={selectedWordPackId}
+            onSelect={setSelectedWordPackId}
+          />
+          <div className="clay-card p-3 w-full">
             <p className="text-warm-mid text-sm font-medium mb-2 text-center">Tidsbegrænsning</p>
-            <div className="flex gap-2 justify-center">
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
               {(['short', 'normal', 'long'] as const).map((preset) => (
                 <button
                   key={preset}
                   onClick={() => setTimerPreset(preset)}
-                  className={`clay-btn px-3 py-1.5 text-sm ${
+                  className={`clay-btn px-3 py-2.5 sm:py-1.5 text-sm min-h-[44px] ${
                     timerPreset === preset ? 'clay-btn-primary' : 'clay-btn-soft'
                   }`}
                 >
@@ -134,13 +141,13 @@ export default function Lobby() {
           <button
             onClick={handleStart}
             disabled={!canStart}
-            className="clay-btn clay-btn-primary px-8 py-3 text-lg"
+            className="clay-btn clay-btn-primary px-8 py-3 text-lg min-h-[48px] w-full"
           >
             {canStart ? 'Start spillet' : `Venter på spillere... (min. 2)`}
           </button>
         </div>
       ) : (
-        <p className="text-warm-mid text-lg font-medium">Venter på at værten starter spillet...</p>
+        <p className="text-warm-mid text-base sm:text-lg font-medium text-center px-4">Venter på at værten starter spillet...</p>
       )}
     </div>
   );

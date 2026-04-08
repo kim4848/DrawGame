@@ -38,11 +38,13 @@ The application consists of two Docker containers deployed behind Cosmos Server 
 | `STRIPE_PRICE_ID` | Stripe Price ID for 29 DKK/month subscription |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 
-### Frontend (Required)
+### Frontend (Optional but Recommended)
 
 | Variable | Description | Example |
 |---|---|---|
-| `VITE_API_BASE_URL` | Backend API base URL | `https://api.yourdomain.com` |
+| `VITE_PUBLIC_SITE_URL` | Public site URL for share links and redirects | `https://apps.kjsoft.dk` |
+
+**Note:** If not set, share links will use `window.location.origin` (browser's current URL).
 
 ## Automated Deployment (GitHub Actions)
 

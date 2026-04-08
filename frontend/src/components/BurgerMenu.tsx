@@ -3,14 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { rejoinRoom } from '../api';
 import { useGameStore } from '../store/gameStore';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useAuth } from '../hooks/useAuth';
+import PremiumBadge from './PremiumBadge';
 
 export default function BurgerMenu() {
   const navigate = useNavigate();
   const { playerId, roomCode, setRoom, clear } = useGameStore();
+  const { user, isAuthenticated, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [rejoining, setRejoining] = useState(false);
   const [error, setError] = useState('');
   const menuRef = useFocusTrap(open);
+
+  const isPremium = isAuthenticated && (user as any)?.isPremium === true;
 
   // Handle Escape key to close menu
   useEffect(() => {
@@ -44,6 +49,17 @@ export default function BurgerMenu() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    setOpen(false);
+    navigate('/');
+  };
+
+  const navigateTo = (path: string) => {
+    setOpen(false);
+    navigate(path);
+  };
+
   return (
     <div className="fixed top-4 right-4 z-50">
       <button
@@ -64,6 +80,15 @@ export default function BurgerMenu() {
           role="menu"
           aria-label="Navigationsmenu"
         >
+          {isAuthenticated && user && (
+            <div className="border-b border-warm-border pb-2 mb-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-warm-dark px-2 py-1">
+                <span>{user.displayName}</span>
+                {isPremium && <PremiumBadge variant="small" />}
+              </div>
+            </div>
+          )}
+
           {canRejoin && (
             <button
               onClick={handleRejoin}
@@ -79,6 +104,40 @@ export default function BurgerMenu() {
           {error && (
             <p className="text-red-500 text-xs text-center font-medium">{error}</p>
           )}
+
+          <div className="border-t border-warm-border pt-2 mt-2 space-y-1">
+            {isAuthenticated ? (
+              <>
+                <button
+                  onClick={() => navigateTo('/premium')}
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-warm-dark hover:bg-cream-light rounded"
+                >
+                  {isPremium ? 'Mit abonnement' : 'Opgrader til Premium'}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-warm-dark hover:bg-cream-light rounded"
+                >
+                  Log ud
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigateTo('/login')}
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-warm-dark hover:bg-cream-light rounded"
+                >
+                  Log ind
+                </button>
+                <button
+                  onClick={() => navigateTo('/register')}
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-warm-dark hover:bg-cream-light rounded"
+                >
+                  Opret konto
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

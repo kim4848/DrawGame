@@ -48,7 +48,7 @@ public static class RoomsEndpoints
 
         app.MapPost("/api/rooms/{id}/start", async (string id, StartGameRequest req, GameService game) =>
         {
-            var success = await game.StartGame(id, req.PlayerId, req.DrawTimer, req.GuessTimer);
+            var success = await game.StartGame(id, req.PlayerId, req.DrawTimer, req.GuessTimer, req.WordPackId);
             if (!success)
                 return Results.BadRequest(new { error = "Kunne ikke starte spillet." });
 

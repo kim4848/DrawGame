@@ -1,0 +1,67 @@
+/* Hearsay Brand Colors - CSS Variables */
+
+:root {
+  /* Primary Colors */
+  --color-coral: #F08080;
+  --color-coral-light: #FFB3B3;
+  --color-coral-dark: #E06666;
+
+  /* Secondary Colors */
+  --color-mint: #98D8C8;
+  --color-mint-light: #B8E6D8;
+  --color-mint-dark: #7AC4B0;
+
+  /* Accent Colors */
+  --color-amber: #FFB366;
+  --color-amber-light: #FFCC99;
+  --color-amber-dark: #FF9933;
+
+  --color-lavender: #D4C5F9;
+  --color-lavender-light: #E6DDFF;
+  --color-lavender-dark: #B8A8E8;
+
+  /* Neutral Colors */
+  --color-cream: #FAF7F0;
+  --color-cream-dark: #F0EBE0;
+
+  --color-warm-mid: #E8B4B8;
+
+  /* FIXED: Warm Light - Improved contrast for WCAG AA compliance */
+  --color-warm-light: #7A5C5C; /* Changed from #A89090 for better contrast */
+  --color-warm-light-legacy: #A89090; /* Old value kept for reference */
+
+  /* State Colors */
+  --color-success: #5DB075;
+  --color-success-light: #8FD6A0;
+  --color-success-dark: #3A9656;
+
+  --color-error: #E74C3C;
+  --color-error-light: #FF6B5B;
+  --color-error-dark: #C0392B;
+
+  --color-warning: #F39C12;
+  --color-warning-light: #FFBD4A;
+  --color-warning-dark: #D68910;
+
+  --color-info: #3498DB;
+  --color-info-light: #5DADE2;
+  --color-info-dark: #2874A6;
+
+  /* Shadows */
+  --shadow-clay-sm: 0 2px 0 rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-clay-md: 0 4px 0 rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-clay-lg: 0 6px 0 rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+
+  /* Gradients */
+  --gradient-coral-mint: linear-gradient(135deg, var(--color-coral) 0%, var(--color-mint) 100%);
+  --gradient-amber-lavender: linear-gradient(135deg, var(--color-amber) 0%, var(--color-lavender) 100%);
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-cream: #2C2C2C;
+    --color-cream-dark: #1F1F1F;
+    --color-warm-light: #B39090;
+  }
+}

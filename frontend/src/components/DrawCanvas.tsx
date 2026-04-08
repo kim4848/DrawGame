@@ -16,7 +16,9 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
   const [brushSize, setBrushSize] = useState(4);
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showOverflowMenu, setShowOverflowMenu] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const overflowMenuRef = useRef<HTMLDivElement>(null);
   const lastPos = useRef<{ x: number; y: number } | null>(null);
   const undoStack = useRef<ImageData[]>([]);
   const redoStack = useRef<ImageData[]>([]);
@@ -27,12 +29,15 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
       if (colorPickerRef.current && !colorPickerRef.current.contains(e.target as Node)) {
         setShowColorPicker(false);
       }
+      if (overflowMenuRef.current && !overflowMenuRef.current.contains(e.target as Node)) {
+        setShowOverflowMenu(false);
+      }
     };
-    if (showColorPicker) {
+    if (showColorPicker || showOverflowMenu) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showColorPicker]);
+  }, [showColorPicker, showOverflowMenu]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -41,7 +46,22 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
     // High-DPI/Retina display scaling
     const dpr = window.devicePixelRatio || 1;
     const displayWidth = canvas.offsetWidth;
-    const maxHeight = Math.min(450, window.innerHeight * 0.5);
+
+    // Responsive canvas height (mobile-first)
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    let maxHeight: number;
+
+    if (viewportWidth < 768) {
+      // Mobile: 70% of viewport height
+      maxHeight = viewportHeight * 0.7;
+    } else if (viewportWidth < 1024) {
+      // Tablet: 60% of viewport, max 500px
+      maxHeight = Math.min(500, viewportHeight * 0.6);
+    } else {
+      // Desktop: Keep current 450px max
+      maxHeight = Math.min(450, viewportHeight * 0.5);
+    }
 
     // Set internal canvas resolution (scaled for high-DPI)
     canvas.width = displayWidth * dpr;
@@ -64,13 +84,13 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
   const getPos = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    // Don't scale by canvas.width/rect.width because ctx is already scaled by dpr
+    // Just convert to canvas-relative CSS pixels
     if ('touches' in e) {
       const touch = e.touches[0];
-      return { x: (touch.clientX - rect.left) * scaleX, y: (touch.clientY - rect.top) * scaleY };
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
     }
-    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
   const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
@@ -174,53 +194,141 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
         Tegn: <span className="text-coral">{prompt}</span>
       </h2>
 
-      {/* Toolbar */}
-      <div className="clay-card p-3 flex flex-wrap items-center gap-2 justify-center w-full max-w-2xl">
-        <button
-          onClick={() => setTool('pen')}
-          className={`clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm min-h-[44px] ${tool === 'pen' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
-        >
-          Pen
-        </button>
-        <button
-          onClick={() => setTool('eraser')}
-          className={`clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm min-h-[44px] ${tool === 'eraser' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
-        >
-          Viskelæder
-        </button>
+      {/* Toolbar - Mobile-first 2-row layout */}
+      <div className="clay-card p-2 w-full max-w-2xl">
+        {/* Top row: Tools, brush size, overflow menu */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTool('pen')}
+              className={`clay-btn px-3 py-2 text-sm min-h-[44px] min-w-[44px] ${tool === 'pen' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
+              aria-label="Pen"
+            >
+              Pen
+            </button>
+            <button
+              onClick={() => setTool('eraser')}
+              className={`clay-btn px-3 py-2 text-sm min-h-[44px] min-w-[44px] ${tool === 'eraser' ? 'clay-btn-primary' : 'clay-btn-soft'}`}
+              aria-label="Viskelæder"
+            >
+              Viskelæder
+            </button>
+          </div>
 
-        <div className="flex gap-1 sm:gap-1 items-center flex-wrap justify-center">
+          <input
+            type="range"
+            min="1"
+            max="20"
+            value={brushSize}
+            onChange={(e) => setBrushSize(Number(e.target.value))}
+            className="flex-1 max-w-[120px] accent-coral min-h-[44px]"
+            aria-label="Penselstørrelse"
+          />
+
+          {/* Overflow menu (mobile) / Inline buttons (desktop) */}
+          <div className="flex items-center gap-2">
+            {/* Desktop: show inline */}
+            <button
+              onClick={undo}
+              disabled={undoStack.current.length <= 1}
+              className="hidden md:flex clay-btn px-3 py-2 text-sm clay-btn-soft min-h-[44px]"
+              title="Fortryd (Ctrl+Z)"
+              aria-label="Fortryd"
+            >
+              Fortryd
+            </button>
+            <button
+              onClick={redo}
+              disabled={redoStack.current.length === 0}
+              className="hidden md:flex clay-btn px-3 py-2 text-sm clay-btn-soft min-h-[44px]"
+              title="Gendan (Ctrl+Y)"
+              aria-label="Gendan"
+            >
+              Gendan
+            </button>
+            <button
+              onClick={clearCanvas}
+              className="hidden md:flex clay-btn px-3 py-2 text-sm bg-red-100 border-red-200 text-red-700 hover:bg-red-200 min-h-[44px]"
+              aria-label="Ryd canvas"
+            >
+              Ryd
+            </button>
+
+            {/* Mobile: overflow menu */}
+            <div className="relative md:hidden" ref={overflowMenuRef}>
+              <button
+                onClick={() => setShowOverflowMenu(!showOverflowMenu)}
+                className="clay-btn clay-btn-soft min-h-[44px] min-w-[44px] flex items-center justify-center text-xl leading-none"
+                aria-label="Flere værktøjer"
+                aria-expanded={showOverflowMenu}
+              >
+                ⋮
+              </button>
+              {showOverflowMenu && (
+                <div className="absolute right-0 top-12 z-50 clay-card p-2 flex flex-col gap-1 min-w-[160px]">
+                  <button
+                    onClick={() => { undo(); setShowOverflowMenu(false); }}
+                    disabled={undoStack.current.length <= 1}
+                    className="clay-btn clay-btn-soft px-4 py-2 text-sm min-h-[44px] text-left disabled:opacity-50"
+                  >
+                    Fortryd (Ctrl+Z)
+                  </button>
+                  <button
+                    onClick={() => { redo(); setShowOverflowMenu(false); }}
+                    disabled={redoStack.current.length === 0}
+                    className="clay-btn clay-btn-soft px-4 py-2 text-sm min-h-[44px] text-left disabled:opacity-50"
+                  >
+                    Gendan (Ctrl+Y)
+                  </button>
+                  <button
+                    onClick={() => { clearCanvas(); setShowOverflowMenu(false); }}
+                    className="clay-btn px-4 py-2 text-sm bg-red-100 border-red-200 text-red-700 hover:bg-red-200 min-h-[44px] text-left"
+                  >
+                    Ryd alt
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom row: Color palette */}
+        <div className="flex items-center justify-center gap-1">
           {COLORS.map((c) => (
             <button
               key={c}
               onClick={() => { setColor(c); setTool('pen'); setShowColorPicker(false); }}
-              className={`w-11 h-11 sm:w-7 sm:h-7 rounded-full border-3 transition-transform ${
+              className={`w-8 h-8 p-2 rounded-full border-3 transition-transform ${
                 color === c && tool === 'pen' && !showColorPicker
                   ? 'border-warm-dark scale-110'
                   : 'border-warm-border'
               }`}
-              style={{ backgroundColor: c }}
+              style={{ backgroundColor: c, minWidth: '44px', minHeight: '44px' }}
               aria-label={`Vælg farve ${c}`}
             />
           ))}
           <div className="relative" ref={colorPickerRef}>
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
-              className={`w-11 h-11 sm:w-7 sm:h-7 rounded-full border-3 ${
+              className={`w-8 h-8 p-2 rounded-full border-3 ${
                 !COLORS.includes(color) && tool === 'pen'
                   ? 'border-warm-dark scale-110'
                   : 'border-warm-border'
               }`}
-              style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
+              style={{
+                background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                minWidth: '44px',
+                minHeight: '44px'
+              }}
               title="Vælg farve"
               aria-label="Vælg tilpasset farve"
             />
             {showColorPicker && (
-              <div className="fixed sm:absolute top-1/2 sm:top-9 left-1/2 -translate-x-1/2 sm:-translate-y-0 -translate-y-1/2 z-50 clay-card p-4 flex flex-col gap-2 items-center relative"
+              <div className="fixed md:absolute top-1/2 md:top-12 left-1/2 -translate-x-1/2 md:-translate-x-0 -translate-y-1/2 md:-translate-y-0 z-50 clay-card p-4 flex flex-col gap-2 items-center"
                    data-testid="color-picker-dropdown">
                 <button
                   onClick={() => setShowColorPicker(false)}
-                  className="absolute top-2 right-2 text-warm-mid hover:text-warm-dark text-xl leading-none w-8 h-8 flex items-center justify-center sm:hidden"
+                  className="absolute top-2 right-2 text-warm-mid hover:text-warm-dark text-xl leading-none w-8 h-8 flex items-center justify-center md:hidden"
                   aria-label="Luk farvevælger"
                 >
                   &times;
@@ -229,7 +337,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
                   data-testid="color-picker-canvas"
                   width={200}
                   height={200}
-                  className="cursor-crosshair rounded-[var(--radius-clay-sm)] w-[200px] h-[200px] sm:w-[160px] sm:h-[160px]"
+                  className="cursor-crosshair rounded-[var(--radius-clay-sm)] w-[200px] h-[200px] md:w-[160px] md:h-[160px]"
                   ref={(el) => {
                     if (!el) return;
                     const ctx = el.getContext('2d')!;
@@ -270,42 +378,6 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
             )}
           </div>
         </div>
-
-        <input
-          type="range"
-          min="1"
-          max="20"
-          value={brushSize}
-          onChange={(e) => setBrushSize(Number(e.target.value))}
-          className="w-32 sm:w-24 accent-coral h-10 sm:h-auto"
-          aria-label="Penselstørrelse"
-        />
-
-        <button
-          onClick={undo}
-          disabled={undoStack.current.length <= 1}
-          className="clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm clay-btn-soft min-h-[44px]"
-          title="Fortryd (Ctrl+Z)"
-          aria-label="Fortryd"
-        >
-          Fortryd
-        </button>
-        <button
-          onClick={redo}
-          disabled={redoStack.current.length === 0}
-          className="clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm clay-btn-soft min-h-[44px]"
-          title="Gendan (Ctrl+Y)"
-          aria-label="Gendan"
-        >
-          Gendan
-        </button>
-        <button
-          onClick={clearCanvas}
-          className="clay-btn px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm bg-red-100 border-red-200 text-red-700 hover:bg-red-200 min-h-[44px]"
-          aria-label="Ryd canvas"
-        >
-          Ryd
-        </button>
       </div>
 
       {/* Canvas */}

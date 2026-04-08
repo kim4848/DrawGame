@@ -42,11 +42,23 @@ npm run build      # production build
 - **Drawing upload is two-step:** `POST /api/drawings/upload` (stores PNG to Azure Blob) then `POST /api/rooms/{id}/submit` (records the blob URL).
 - **Timers:** Hardcoded 90s for drawing, 30s for guessing (v1).
 - **Player identity:** Ephemeral per session, stored in `localStorage` (`myPlayerId`, `myRoomId`, `myRoomCode`).
-- **No auth:** Players are anonymous, identified only by generated IDs.
+- **Authentication:** JWT-based user accounts (optional). Players can be anonymous OR authenticated. `players.user_id` links to `users.id` when authenticated.
 
 ## API Endpoints
 
 ```
+# Authentication (optional)
+POST   /api/auth/register          — Register new user (email, password, displayName)
+POST   /api/auth/login             — Login (email, password) → JWT token
+GET    /api/auth/me                — Get current user (requires JWT)
+
+# Payments (requires JWT)
+POST   /api/payments/create-checkout — Create Stripe checkout session (returns URL)
+GET    /api/payments/subscription    — Get user subscription status
+POST   /api/payments/portal          — Create customer portal session (manage subscription)
+POST   /api/payments/webhook         — Stripe webhook handler (public, signature verified)
+
+# Game
 POST   /api/rooms                  — Create room
 POST   /api/rooms/{code}/join      — Join room
 GET    /api/rooms/{code}           — Room state
@@ -67,6 +79,14 @@ GET    /health                     — Health check
 | `DB_PATH` | DuckDB file path (`/data/hearsay.duckdb`) |
 | `ASPNETCORE_URLS` | Backend listen URL (`http://+:5000`) |
 | `VITE_API_BASE_URL` | Frontend API base URL |
+| `JWT_SECRET` | Secret key for JWT signing (required for auth) |
+| `JWT_ISSUER` | JWT issuer (default: `hearsay-api`) |
+| `JWT_AUDIENCE` | JWT audience (default: `hearsay-app`) |
+| `JWT_EXPIRATION_HOURS` | Token expiration in hours (default: `168` = 7 days) |
+| `STRIPE_SECRET_KEY` | Stripe API secret key (required for payments) |
+| `STRIPE_PRICE_ID` | Stripe Price ID for 29 DKK/month subscription |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `VITE_PUBLIC_SITE_URL` | Public site URL for share links (default: `window.location.origin`) |
 
 ## Specification
 

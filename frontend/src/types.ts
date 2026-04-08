@@ -22,6 +22,7 @@ export interface PollResponse {
   drawTimer: number;
   guessTimer: number;
   nextRoomCode: string | null;
+  wordPackId: string | null;
 }
 
 export interface CreateRoomResponse {
@@ -62,4 +63,14 @@ export interface RevealResponse {
 export interface GalleryDrawing {
   imageUrl: string;
   word: string;
+}
+
+export interface WordPack {
+  id: string;
+  name: string;
+  description: string;
+  iconUrl?: string;
+  isPremium: boolean;
+  isDefault: boolean;
+  createdAt: string;
 }

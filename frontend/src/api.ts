@@ -5,6 +5,7 @@ import type {
   RoomStateResponse,
   RevealResponse,
   GalleryDrawing,
+  WordPack,
 } from './types';
 import { retryWithBackoff } from './utils/network';
 
@@ -54,12 +55,13 @@ export async function startGame(
   roomId: string,
   playerId: string,
   drawTimer?: number,
-  guessTimer?: number
+  guessTimer?: number,
+  wordPackId?: string
 ): Promise<void> {
   const res = await fetch(`${BASE}/api/rooms/${roomId}/start`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ playerId, drawTimer, guessTimer }),
+    body: JSON.stringify({ playerId, drawTimer, guessTimer, wordPackId }),
   });
   await json(res);
 }
@@ -143,4 +145,153 @@ export async function markDone(roomId: string, playerId: string): Promise<void> 
     body: JSON.stringify({ playerId }),
   });
   await json(res);
+}
+
+// Auth API
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  displayName: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    displayName: string;
+  };
+}
+
+export interface AuthResponse {
+  id: string;
+  email: string;
+  displayName: string;
+  createdAt?: string;
+  lastLoginAt?: string;
+}
+
+export async function login(data: LoginRequest): Promise<LoginResponse> {
+  const res = await fetch(`${BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return json(res);
+}
+
+export async function register(data: RegisterRequest): Promise<LoginResponse> {
+  const res = await fetch(`${BASE}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return json(res);
+}
+
+export async function checkSession(): Promise<AuthResponse | null> {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`${BASE}/api/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      localStorage.removeItem('authToken');
+      return null;
+    }
+    return json(res);
+  } catch {
+    localStorage.removeItem('authToken');
+    return null;
+  }
+}
+
+export async function logout(): Promise<void> {
+  localStorage.removeItem('authToken');
+}
+
+// Payment API
+export interface SubscriptionResponse {
+  isPremium: boolean;
+  status: string;
+  currentPeriodEnd?: string;
+}
+
+export async function createCheckout(): Promise<{ url: string }> {
+  const token = localStorage.getItem('authToken');
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${BASE}/api/payments/create-checkout`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  return json(res);
+}
+
+export async function getSubscription(): Promise<SubscriptionResponse> {
+  const token = localStorage.getItem('authToken');
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${BASE}/api/payments/subscription`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  return json(res);
+}
+
+export async function createPortalSession(): Promise<{ url: string }> {
+  const token = localStorage.getItem('authToken');
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${BASE}/api/payments/portal`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  return json(res);
+}
+
+// Word Pack API
+export async function getWordPacks(): Promise<WordPack[]> {
+  const token = localStorage.getItem('authToken');
+  const headers: HeadersInit = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE}/api/word-packs`, { headers });
+  return json(res);
+}
+
+export async function getWordPack(id: string): Promise<WordPack> {
+  const token = localStorage.getItem('authToken');
+  const headers: HeadersInit = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE}/api/word-packs/${id}`, { headers });
+  return json(res);
+}
+
+export async function getRandomWordFromPack(id: string): Promise<{ word: string }> {
+  const token = localStorage.getItem('authToken');
+  const headers: HeadersInit = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE}/api/word-packs/${id}/random-word`, { headers });
+  return json(res);
 }

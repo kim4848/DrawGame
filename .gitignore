@@ -44,5 +44,26 @@ Thumbs.db
 test-results/
 playwright-report/
 
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml
+
+# Stripe CLI
+.stripe/
+
+# Test coverage
+coverage/
+TestResults/
+
+# .NET build artifacts
+*.nupkg
+*.snupkg
+project.assets.json
+
+# Marketing
+marketing/
+
 # Claude Code
 .claude/

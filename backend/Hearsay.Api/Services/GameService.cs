@@ -65,7 +65,7 @@ public class GameService
         return (room, player);
     }
 
-    public async Task<bool> StartGame(string roomId, string playerId, int? drawTimer = null, int? guessTimer = null)
+    public async Task<bool> StartGame(string roomId, string playerId, int? drawTimer = null, int? guessTimer = null, string? wordPackId = null)
     {
         var room = await _db.GetRoomById(roomId);
         if (room == null || room.Status != "LOBBY" || room.HostId != playerId)
@@ -77,6 +77,9 @@ public class GameService
 
         if (drawTimer.HasValue && guessTimer.HasValue)
             await _db.UpdateRoomTimers(roomId, drawTimer.Value, guessTimer.Value);
+
+        if (!string.IsNullOrWhiteSpace(wordPackId))
+            await _db.UpdateRoomWordPack(roomId, wordPackId);
 
         await _db.UpdateRoomNumPlayers(roomId, players.Count);
 
@@ -215,12 +218,15 @@ public class GameService
             }
         }
 
+        // Batch query: get all submitted player IDs for current round in one query
+        var submittedPlayerIds = room.Status == "ACTIVE"
+            ? await _db.GetSubmittedPlayerIdsForRound(roomId, currentRound)
+            : new HashSet<string>();
+
         var playerDtos = new List<PlayerDto>();
         foreach (var p in players)
         {
-            bool pSubmitted = room.Status == "ACTIVE"
-                ? await _db.HasPlayerSubmittedForRound(roomId, p.Id, currentRound)
-                : false;
+            bool pSubmitted = submittedPlayerIds.Contains(p.Id);
             bool isActive = (DateTime.UtcNow - p.LastSeenAt).TotalSeconds < 30;
             playerDtos.Add(new PlayerDto(p.Id, p.Name, pSubmitted, isActive));
         }
@@ -236,7 +242,8 @@ public class GameService
             hasSubmitted,
             room.DrawTimer,
             room.GuessTimer,
-            room.NextRoomCode
+            room.NextRoomCode,
+            room.WordPackId
         );
     }
 

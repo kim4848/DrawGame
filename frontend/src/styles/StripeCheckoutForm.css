@@ -1,0 +1,100 @@
+.stripe-checkout-form {
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.stripe-checkout-form__info {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row--note {
+  font-size: 0.875rem;
+  color: #6b7280;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.stripe-checkout-form__notice {
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stripe-checkout-form__notice p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+.stripe-checkout-form__notice p:last-child {
+  margin-bottom: 0;
+}
+
+.stripe-checkout-form__notice-small {
+  font-size: 0.8rem !important;
+  color: #3b82f6 !important;
+}
+
+.stripe-checkout-form__error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  color: #991b1b;
+  font-size: 0.875rem;
+}
+
+.stripe-checkout-form__actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stripe-checkout-form__actions .btn {
+  flex: 1;
+}
+
+.stripe-checkout-form__secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.stripe-checkout-form__secure svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 640px) {
+  .stripe-checkout-form__actions {
+    flex-direction: column-reverse;
+  }
+
+  .stripe-checkout-form__actions .btn {
+    width: 100%;
+  }
+}

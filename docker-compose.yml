@@ -9,6 +9,13 @@ services:
       - AZURE_BLOB_CONTAINER=hearsay
       - DB_PATH=/data/hearsay.duckdb
       - ALLOWED_ORIGINS=https://apps.kjsoft.dk
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ISSUER=hearsay-api
+      - JWT_AUDIENCE=hearsay-app
+      - JWT_EXPIRATION_HOURS=168
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
     volumes:
       - ./data:/data
     ports:
@@ -16,7 +23,11 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY}
+        - VITE_PUBLIC_SITE_URL=${VITE_PUBLIC_SITE_URL}
     container_name: hearsay-frontend
     ports:
       - "8083:8083"

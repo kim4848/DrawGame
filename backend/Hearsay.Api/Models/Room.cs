@@ -12,4 +12,5 @@ public class Room
     public int DrawTimer { get; set; } = 90;
     public int GuessTimer { get; set; } = 30;
     public string? NextRoomCode { get; set; }
+    public string? WordPackId { get; set; }
 }

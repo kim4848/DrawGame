@@ -78,4 +78,29 @@ public class BlobStorageService
             return null;
         return File.Exists(fullPath) ? fullPath : null;
     }
+
+    public async Task<(bool isHealthy, string? message)> CheckHealthAsync()
+    {
+        try
+        {
+            if (_useLocalStorage)
+            {
+                // Check local storage directory is accessible
+                if (Directory.Exists(_localStoragePath))
+                    return (true, "Local storage");
+                return (false, "Local storage directory not found");
+            }
+
+            // Check Azure Blob Storage connectivity
+            if (_containerClient == null)
+                return (false, "Container client not initialized");
+
+            await _containerClient.ExistsAsync();
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
 }

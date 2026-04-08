@@ -16,6 +16,7 @@ OPTIONAL_VARS=(
   "STRIPE_SECRET_KEY"
   "STRIPE_PRICE_ID"
   "STRIPE_WEBHOOK_SECRET"
+  "VITE_PUBLIC_SITE_URL"
 )
 
 # Track errors
@@ -54,6 +55,21 @@ for VAR in "${OPTIONAL_VARS[@]}"; do
     echo "✅ $VAR is set"
   fi
 done
+
+# Validate URL format for VITE_PUBLIC_SITE_URL if set
+if [ -n "$VITE_PUBLIC_SITE_URL" ]; then
+  if [[ ! "$VITE_PUBLIC_SITE_URL" =~ ^https?:// ]]; then
+    echo "❌ ERROR: VITE_PUBLIC_SITE_URL must start with http:// or https://"
+    ERRORS=$((ERRORS + 1))
+  else
+    # Check for common typos in domain
+    if [[ "$VITE_PUBLIC_SITE_URL" =~ kjserf ]]; then
+      echo "❌ ERROR: VITE_PUBLIC_SITE_URL contains 'kjserf' - did you mean 'kjsoft'?"
+      ERRORS=$((ERRORS + 1))
+    fi
+    echo "✅ VITE_PUBLIC_SITE_URL format is valid"
+  fi
+fi
 
 # Summary
 echo ""

@@ -1,0 +1,55 @@
+<svg width="400" height="120" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="coralMintGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F08080;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#98D8C8;stop-opacity:1" />
+    </linearGradient>
+
+    <filter id="clayShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Speech bubble + pencil hybrid icon -->
+  <g id="icon" transform="translate(20, 20)">
+    <!-- Speech bubble base -->
+    <path d="M 40 15 C 40 7 33 0 25 0 L 15 0 C 7 0 0 7 0 15 L 0 35 C 0 43 7 50 15 50 L 18 50 L 25 60 L 28 50 L 25 50 C 33 50 40 43 40 35 Z"
+          fill="url(#coralMintGradient)"
+          filter="url(#clayShadow)"
+          stroke="#E06666"
+          stroke-width="3"/>
+
+    <!-- Pencil/brush integrated into bubble -->
+    <path d="M 15 20 L 30 35 M 30 35 L 28 38 L 25 36 Z"
+          stroke="#FFF"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+
+    <!-- Pencil tip accent -->
+    <circle cx="30" cy="35" r="3" fill="#FFB366"/>
+  </g>
+
+  <!-- Hearsay wordmark -->
+  <text x="80" y="55"
+        font-family="Fredoka, sans-serif"
+        font-size="42"
+        font-weight="700"
+        fill="url(#coralMintGradient)"
+        filter="url(#clayShadow)">Hearsay</text>
+
+  <!-- Rygtet Går subtitle -->
+  <text x="80" y="80"
+        font-family="Fredoka, sans-serif"
+        font-size="18"
+        font-weight="500"
+        fill="#A0A0A0">Rygtet Går</text>
+</svg>
