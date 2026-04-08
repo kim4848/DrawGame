@@ -24,6 +24,7 @@ export default function Lobby() {
 
   const [copied, setCopied] = useState(false);
   const [timerPreset, setTimerPreset] = useState<'short' | 'normal' | 'long'>('normal');
+  const [showTimerSettings, setShowTimerSettings] = useState(false);
   const [selectedWordPackId, setSelectedWordPackId] = useState<string | undefined>();
 
   const siteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || window.location.origin;
@@ -122,21 +123,39 @@ export default function Lobby() {
             selectedPackId={selectedWordPackId}
             onSelect={setSelectedWordPackId}
           />
-          <div className="clay-card p-3 w-full">
-            <p className="text-warm-mid text-sm font-medium mb-2 text-center">Tidsbegrænsning</p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-              {(['short', 'normal', 'long'] as const).map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => setTimerPreset(preset)}
-                  className={`clay-btn px-3 py-2.5 sm:py-1.5 text-sm min-h-[44px] ${
-                    timerPreset === preset ? 'clay-btn-primary' : 'clay-btn-soft'
-                  }`}
-                >
-                  {timerConfig[preset].label}
-                </button>
-              ))}
-            </div>
+          <div className="w-full">
+            <button
+              onClick={() => setShowTimerSettings(!showTimerSettings)}
+              className="clay-btn clay-btn-soft px-3 py-2 text-sm min-h-[44px] w-full flex items-center justify-center gap-2"
+              aria-expanded={showTimerSettings}
+              aria-label="Tidsbegrænsning"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span className="text-warm-mid">{timerConfig[timerPreset].label}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`text-warm-mid transition-transform duration-200 ${showTimerSettings ? 'rotate-180' : ''}`}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {showTimerSettings && (
+              <div className="clay-card p-3 mt-2 w-full">
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  {(['short', 'normal', 'long'] as const).map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => { setTimerPreset(preset); setShowTimerSettings(false); }}
+                      className={`clay-btn px-3 py-2.5 sm:py-1.5 text-sm min-h-[44px] ${
+                        timerPreset === preset ? 'clay-btn-primary' : 'clay-btn-soft'
+                      }`}
+                    >
+                      {timerConfig[preset].label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <button
             onClick={handleStart}

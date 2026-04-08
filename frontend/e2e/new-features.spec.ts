@@ -30,8 +30,10 @@ async function setupTwoPlayerGame(browser: Browser) {
 }
 
 async function startGameWithTimer(host: Page, preset: 'Kort' | 'Normal' | 'Lang') {
-  // Select timer preset
-  await host.getByRole('button', { name: new RegExp(preset) }).click();
+  // Expand timer settings
+  await host.getByRole('button', { name: /Tidsbegrænsning/ }).click();
+  // Select timer preset (use getByText to avoid matching the toggle button)
+  await host.getByText(new RegExp(`^${preset} \\(`)).click();
   // Start game
   await host.getByRole('button', { name: 'Start spillet' }).click();
 }
@@ -246,7 +248,13 @@ test.describe('Configurable Timer', () => {
   test('timer presets are visible in lobby for host', async ({ browser }) => {
     const { host, ctx1, ctx2 } = await setupTwoPlayerGame(browser);
 
-    await expect(host.getByText('Tidsbegrænsning')).toBeVisible();
+    // Timer toggle button is visible with default preset label
+    const timerToggle = host.getByRole('button', { name: /Tidsbegrænsning/ });
+    await expect(timerToggle).toBeVisible();
+    await expect(timerToggle).toContainText('Normal');
+
+    // Expand to see presets
+    await timerToggle.click();
     await expect(host.getByRole('button', { name: /Kort/ })).toBeVisible();
     await expect(host.getByRole('button', { name: /Normal/ })).toBeVisible();
     await expect(host.getByRole('button', { name: /Lang/ })).toBeVisible();
@@ -259,7 +267,7 @@ test.describe('Configurable Timer', () => {
     const { player2, ctx1, ctx2 } = await setupTwoPlayerGame(browser);
 
     // Non-host should see waiting text, NOT the timer config
-    await expect(player2.getByText('Tidsbegrænsning')).not.toBeVisible();
+    await expect(player2.getByRole('button', { name: /Tidsbegrænsning/ })).not.toBeVisible();
 
     await ctx1.close();
     await ctx2.close();
