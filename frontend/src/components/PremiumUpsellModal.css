@@ -1,0 +1,110 @@
+.premium-upsell {
+  max-width: 28rem;
+  text-align: center;
+}
+
+.premium-upsell__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.premium-upsell__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1f2937;
+}
+
+.premium-upsell__body {
+  margin-bottom: 2rem;
+}
+
+.premium-upsell__message {
+  font-size: 1rem;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.premium-upsell__features {
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.premium-upsell__features-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem 0;
+}
+
+.premium-upsell__features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.premium-upsell__features-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: #1f2937;
+}
+
+.premium-upsell__features-list svg {
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+.premium-upsell__price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.premium-upsell__price-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.premium-upsell__price-period {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.premium-upsell__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.premium-upsell__actions .btn {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .premium-upsell {
+    max-width: 100%;
+  }
+
+  .premium-upsell__price-amount {
+    font-size: 2rem;
+  }
+}
