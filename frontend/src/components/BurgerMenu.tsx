@@ -15,7 +15,7 @@ export default function BurgerMenu() {
   const [error, setError] = useState('');
   const menuRef = useFocusTrap(open);
 
-  const isPremium = isAuthenticated && (user as any)?.isPremium === true;
+  const isPremium = isAuthenticated && (user as { isPremium?: boolean } | null)?.isPremium === true;
 
   // Handle Escape key to close menu
   useEffect(() => {

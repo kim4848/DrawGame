@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { checkSession, logout as apiLogout, login as apiLogin, register as apiRegister } from '../api';
 import type { AuthResponse, LoginRequest, RegisterRequest, LoginResponse } from '../api';
 
-interface AuthContextType {
+export interface AuthContextType {
   user: AuthResponse | null;
   loading: boolean;
   isAuthenticated: boolean;
@@ -13,6 +13,7 @@ interface AuthContextType {
   refreshSession: () => Promise<void>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -29,7 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    refreshSession().finally(() => setLoading(false));
+    let active = true;
+    checkSession()
+      .then(userData => { if (active) setUser(userData); })
+      .catch(() => { if (active) setUser(null); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
 
   const login = async (data: LoginRequest): Promise<LoginResponse> => {

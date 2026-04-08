@@ -127,7 +127,7 @@ test.describe('Gameplay rounds - 2 players', () => {
 test.describe('Gameplay rounds - 3 players', () => {
   test('full game with 3 players: WORD, DRAW own, GUESS, DRAW → REVEAL', async ({ browser }) => {
     const { pages, contexts } = await setupGame(browser, 3);
-    const [p1, p2, p3] = pages;
+    const [p1] = pages;
     const words = ['sol', 'hund', 'båd'];
 
     // -- Round 0: WORD (Runde 1 af 4) --

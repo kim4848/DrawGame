@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Hearsay.Api.Tests/Hearsay.Api.Tests.csproj" />
+  <Project Path="Hearsay.Api/Hearsay.Api.csproj" />
+</Solution>

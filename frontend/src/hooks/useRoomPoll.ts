@@ -69,7 +69,7 @@ export function useRoomPoll() {
             addToast('Forbindelse genoprettet', 'success');
           }
         }
-      } catch (error) {
+      } catch {
         consecutiveErrorsRef.current++;
 
         if (consecutiveErrorsRef.current === 1) {

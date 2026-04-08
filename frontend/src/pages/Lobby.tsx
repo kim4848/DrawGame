@@ -60,8 +60,8 @@ export default function Lobby() {
     try {
       const t = timerConfig[timerPreset];
       await startGame(roomId, playerId, t.draw, t.guess, selectedWordPackId);
-    } catch (e: any) {
-      addToast(e.message || 'Kunne ikke starte spillet.', 'error');
+    } catch (e: unknown) {
+      addToast((e instanceof Error && e.message) || 'Kunne ikke starte spillet.', 'error');
     }
   };
 

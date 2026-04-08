@@ -1,4 +1,4 @@
-import { test, expect, type Page, type BrowserContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Hearsay Game Flow', () => {
   test('create room and see room code', async ({ page }) => {

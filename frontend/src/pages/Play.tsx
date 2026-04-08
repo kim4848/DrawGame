@@ -38,12 +38,12 @@ export default function Play() {
         setWordInput(r.word);
         setWordEmoji(r.emoji);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Fall back to hardcoded words if API fails
       const r: RandomWord = getRandomWord();
       setWordInput(r.word);
       setWordEmoji(r.emoji);
-      if (error.message?.includes('premium')) {
+      if (error instanceof Error && error.message?.includes('premium')) {
         addToast('Denne ordpakke kræver premium abonnement', 'error');
       }
     }
@@ -71,13 +71,15 @@ export default function Play() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [roomStatus]);
 
-  useEffect(() => {
+  const [lastResetRound, setLastResetRound] = useState(currentRound);
+  if (lastResetRound !== currentRound) {
+    setLastResetRound(currentRound);
     setSubmitted(false);
     setWordInput('');
     setWordEmoji('');
     setGuessInput('');
     setSubmitting(false);
-  }, [currentRound]);
+  }
 
   const isSubmitted = submitted || hasSubmitted;
 

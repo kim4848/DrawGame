@@ -16,7 +16,7 @@ export function usePremium() {
   const [upsellModalOpen, setUpsellModalOpen] = useState(false);
   const [currentFeature, setCurrentFeature] = useState<string>('');
   const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isAuthenticated);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -24,8 +24,6 @@ export function usePremium() {
         .then(setSubscription)
         .catch(() => setSubscription(null))
         .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated]);
 

@@ -22,7 +22,9 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
   const lastPos = useRef<{ x: number; y: number } | null>(null);
   const undoStack = useRef<ImageData[]>([]);
   const redoStack = useRef<ImageData[]>([]);
-  const [, forceRender] = useState(0);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const syncUndoRedo = () => { setCanUndo(undoStack.current.length > 1); setCanRedo(redoStack.current.length > 0); };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -129,7 +131,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
         if (undoStack.current.length >= MAX_UNDO) undoStack.current.shift();
         undoStack.current.push(snapshot);
         redoStack.current = [];
-        forceRender((n) => n + 1);
+        syncUndoRedo();
       }
     }
     setIsDrawing(false);
@@ -146,7 +148,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
     if (undoStack.current.length >= MAX_UNDO) undoStack.current.shift();
     undoStack.current.push(snapshot);
     redoStack.current = [];
-    forceRender((n) => n + 1);
+    syncUndoRedo();
   };
 
   const undo = useCallback(() => {
@@ -156,7 +158,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
     const current = undoStack.current.pop()!;
     redoStack.current.push(current);
     ctx.putImageData(undoStack.current[undoStack.current.length - 1], 0, 0);
-    forceRender((n) => n + 1);
+    syncUndoRedo();
   }, []);
 
   const redo = useCallback(() => {
@@ -166,7 +168,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
     const next = redoStack.current.pop()!;
     undoStack.current.push(next);
     ctx.putImageData(next, 0, 0);
-    forceRender((n) => n + 1);
+    syncUndoRedo();
   }, []);
 
   useEffect(() => {
@@ -230,7 +232,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
             {/* Desktop: show inline */}
             <button
               onClick={undo}
-              disabled={undoStack.current.length <= 1}
+              disabled={!canUndo}
               className="hidden md:flex clay-btn px-3 py-2 text-sm clay-btn-soft min-h-[44px]"
               title="Fortryd (Ctrl+Z)"
               aria-label="Fortryd"
@@ -239,7 +241,7 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
             </button>
             <button
               onClick={redo}
-              disabled={redoStack.current.length === 0}
+              disabled={!canRedo}
               className="hidden md:flex clay-btn px-3 py-2 text-sm clay-btn-soft min-h-[44px]"
               title="Gendan (Ctrl+Y)"
               aria-label="Gendan"
@@ -268,14 +270,14 @@ export default function DrawCanvas({ prompt, onSubmit, disabled }: DrawCanvasPro
                 <div className="absolute right-0 top-12 z-50 clay-card p-2 flex flex-col gap-1 min-w-[160px]">
                   <button
                     onClick={() => { undo(); setShowOverflowMenu(false); }}
-                    disabled={undoStack.current.length <= 1}
+                    disabled={!canUndo}
                     className="clay-btn clay-btn-soft px-4 py-2 text-sm min-h-[44px] text-left disabled:opacity-50"
                   >
                     Fortryd (Ctrl+Z)
                   </button>
                   <button
                     onClick={() => { redo(); setShowOverflowMenu(false); }}
-                    disabled={redoStack.current.length === 0}
+                    disabled={!canRedo}
                     className="clay-btn clay-btn-soft px-4 py-2 text-sm min-h-[44px] text-left disabled:opacity-50"
                   >
                     Gendan (Ctrl+Y)

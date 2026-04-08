@@ -37,8 +37,8 @@ export default function Home() {
       setRoom(res.roomId, res.roomCode);
       setHostId(res.playerId);
       navigate('/lobby');
-    } catch (e: any) {
-      addToast(e.message || 'Noget gik galt.', 'error');
+    } catch (e: unknown) {
+      addToast((e instanceof Error && e.message) || 'Noget gik galt.', 'error');
     } finally {
       setLoading(false);
     }
@@ -53,8 +53,8 @@ export default function Home() {
       setRoom(res.roomId, joinCode.trim().toUpperCase());
       setHostId('');
       navigate('/lobby');
-    } catch (e: any) {
-      addToast(e.message || 'Rummet blev ikke fundet. Tjek koden og prøv igen.', 'error');
+    } catch (e: unknown) {
+      addToast((e instanceof Error && e.message) || 'Rummet blev ikke fundet. Tjek koden og prøv igen.', 'error');
     } finally {
       setLoading(false);
     }

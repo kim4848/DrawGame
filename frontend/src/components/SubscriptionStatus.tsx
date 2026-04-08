@@ -24,13 +24,13 @@ export default function SubscriptionStatus({
     });
   };
 
-  const isExpiringSoon = () => {
+  const isExpiringSoon = (() => {
     if (!expiresAt) return false;
     const daysUntilExpiry = Math.ceil(
-      (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      (new Date(expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
     );
     return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
-  };
+  })();
 
   return (
     <div className={`subscription-status ${isPremium ? 'subscription-status--premium' : 'subscription-status--free'}`}>
@@ -41,8 +41,8 @@ export default function SubscriptionStatus({
             <span className="subscription-status__label">Aktiv abonnement</span>
           </div>
           {expiresAt && (
-            <p className={`subscription-status__expiry ${isExpiringSoon() ? 'subscription-status__expiry--warning' : ''}`}>
-              {isExpiringSoon() && (
+            <p className={`subscription-status__expiry ${isExpiringSoon ? 'subscription-status__expiry--warning' : ''}`}>
+              {isExpiringSoon && (
                 <svg
                   width="16"
                   height="16"

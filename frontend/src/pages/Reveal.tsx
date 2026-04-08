@@ -211,8 +211,8 @@ export default function Reveal() {
         addToast('Nyt spil oprettet!', 'success');
         // Use replace to prevent back-button returning to reveal
         navigate('/lobby', { replace: true });
-      } catch (e: any) {
-        addToast(e.message || 'Kunne ikke starte nyt spil.', 'error');
+      } catch (e: unknown) {
+        addToast((e instanceof Error && e.message) || 'Kunne ikke starte nyt spil.', 'error');
         setStarting(false);
       }
     };
